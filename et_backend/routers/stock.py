@@ -8,11 +8,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 import logging
 
-from ..services.stock_service import get_stock_service
-from ..schemas.stock import StockDetailResponse, StockListResponse, StockSummaryResponse, OHLCDataPoint
-from ..utils.logger import get_logger
-from ..utils.response import StandardResponse
-from ..utils.cache import api_response_cache
+from et_backend.services.stock_service import get_stock_service
+from et_backend.schemas.stock import StockDetailResponse, StockListResponse, StockSummaryResponse, OHLCDataPoint
+from et_backend.utils.logger import get_logger
+from et_backend.utils.response import StandardResponse
+from et_backend.utils.cache import api_response_cache
 
 # Create router
 router = APIRouter(prefix="/stock", tags=["stock"])

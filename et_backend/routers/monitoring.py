@@ -10,8 +10,8 @@ from datetime import datetime
 import psutil
 import time
 
-from ..utils.cache import get_all_cache_stats, cleanup_expired_cache
-from ..utils.logger import get_logger
+from et_backend.utils.cache import get_all_cache_stats, cleanup_expired_cache
+from et_backend.utils.logger import get_logger
 
 # Create router
 router = APIRouter(prefix="/monitoring", tags=["monitoring"])

@@ -8,13 +8,13 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 import logging
 
-from ..data.fetcher import fetch_stock_ohlc_data, get_single_stock_data
-from ..signals.detector import detect_signal
-from ..context.context_engine import generate_full_context
-from ..scoring.scorer import calculate_signal_score
-from ..ai.explainer import AIExplainer
-from ..utils.tag_generator import generate_tags, generate_risk_note
-from ..utils.logger import get_logger
+from et_backend.data.fetcher import fetch_stock_ohlc_data, get_single_stock_data
+from et_backend.signals.detector import detect_signal
+from et_backend.context.context_engine import generate_full_context
+from et_backend.scoring.scorer import calculate_signal_score
+from et_backend.ai.explainer import AIExplainer
+from et_backend.utils.tag_generator import generate_tags, generate_risk_note
+from et_backend.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

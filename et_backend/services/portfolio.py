@@ -9,9 +9,9 @@ from sqlalchemy.orm import Session
 import uuid
 import logging
 
-from ..models.user import User
-from ..models.portfolio import PortfolioItem
-from ..schemas.portfolio import PortfolioItemCreate, PortfolioItemResponse
+from et_backend.models.user import User
+from et_backend.models.portfolio import PortfolioItem
+from et_backend.schemas.portfolio import PortfolioItemCreate, PortfolioItemResponse
 
 logger = logging.getLogger(__name__)
 

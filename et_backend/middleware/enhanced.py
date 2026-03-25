@@ -14,9 +14,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from collections import defaultdict, deque
 
-from config import settings
-from exceptions import RateLimitError
-from utils.response import StandardResponse
+from et_backend.config import settings
+from et_backend.exceptions import RateLimitError
+from et_backend.utils.response import StandardResponse
 
 logger = logging.getLogger(__name__)
 
@@ -260,7 +260,8 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         
         # Remove server information
-        response.headers.pop("Server", None)
+        if "server" in response.headers: 
+            del response.headers["server"]
         
         return response
 

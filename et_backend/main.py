@@ -13,50 +13,51 @@ Production-ready FastAPI backend with comprehensive features:
 
 import time
 import asyncio
+from typing import Optional, List, Dict, Any
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, HTTPException, status
+from fastapi import FastAPI,Depends,Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
 
 # Configuration and settings
-from config import settings, get_settings
+from et_backend.config import settings, get_settings
 
 # Database
-from db.base import create_tables
-from db.session import get_db_session
+from et_backend.db.base import create_tables
+from et_backend.db.session import get_db_session
 
 # Routers
-from routers.portfolio import router as portfolio_router
-from routers.stock import router as stock_router
-from routers.assistant import router as assistant_router
-from routers.monitoring import router as monitoring_router
-from routers.database import router as database_router
-from routers.health import router as health_router
+from et_backend.routers.portfolio import router as portfolio_router
+from et_backend.routers.stock import router as stock_router
+from et_backend.routers.assistant import router as assistant_router
+from et_backend.routers.monitoring import router as monitoring_router
+from et_backend.routers.database import router as database_router
+from et_backend.routers.health import router as health_router
 
 # Middleware
-from middleware.enhanced import setup_all_middleware
+from et_backend.middleware.enhanced import setup_all_middleware
 
 # Exception handling
-from error_handlers import setup_exception_handlers
+from et_backend.error_handlers import setup_exception_handlers
 
 # Authentication
-from auth import get_current_user, require_auth
+from et_backend.auth import get_current_user, require_auth
 
 # Core modules
-from data.fetcher import fetch_stock_data, get_single_stock_data
-from signals.detector import detect_signal, detect_signals_batch
-from context.context_engine import generate_full_context, generate_full_context_batch
-from scoring.scorer import calculate_signal_score, calculate_signal_score_batch
-from ai.explainer import AIExplainer
-from ranking.ranker import create_demo_response, get_top_n_opportunities
-from insights.insight_generator import generate_batch_insights
-from utils.tag_generator import generate_tags, generate_risk_note
-from utils.response import StandardResponse
-from utils.cache import stock_data_cache, api_response_cache, cleanup_expired_cache
+from et_backend.data.fetcher import fetch_stock_data, get_single_stock_data
+from et_backend.signals.detector import detect_signal, detect_signals_batch
+from et_backend.context.context_engine import generate_full_context, generate_full_context_batch
+from et_backend.scoring.scorer import calculate_signal_score, calculate_signal_score_batch
+from et_backend.ai.explainer import AIExplainer
+from et_backend.ranking.ranker import create_demo_response, get_top_n_opportunities
+from et_backend.insights.insight_generator import generate_batch_insights
+from et_backend.utils.tag_generator import generate_tags, generate_risk_note
+from et_backend.utils.response import StandardResponse
+from et_backend.utils.cache import stock_data_cache, api_response_cache, cleanup_expired_cache
 
 # Exceptions
-from exceptions import (
+from et_backend.exceptions import (
     SignalForgeException,
     ValidationError,
     ExternalAPIError,

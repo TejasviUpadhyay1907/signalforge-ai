@@ -11,11 +11,11 @@ import openai
 import requests
 from dotenv import load_dotenv
 
-from ..data.fetcher import fetch_stock_data
-from ..signals.detector import detect_signal
-from ..context.context_engine import generate_full_context
-from ..scoring.scorer import calculate_signal_score
-from ..ai.explainer import AIExplainer
+from et_backend.data.fetcher import fetch_stock_data
+from et_backend.signals.detector import detect_signal
+from et_backend.context.context_engine import generate_full_context
+from et_backend.scoring.scorer import calculate_signal_score
+from et_backend.ai.explainer import AIExplainer
 
 # Load environment variables
 load_dotenv()

@@ -240,3 +240,6 @@ Score Breakdown:
     """.strip()
     
     return breakdown
+    
+def calculate_signal_score_batch(signals): 
+    return [calculate_signal_score(signal) for signal in signals]

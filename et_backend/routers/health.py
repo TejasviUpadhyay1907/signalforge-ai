@@ -12,12 +12,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
-from config import settings
-from db.session import get_db_session
-from utils.response import StandardResponse
-from utils.cache import get_all_cache_stats
-from exceptions import DatabaseError, ExternalAPIError
-from data.fetcher import get_single_stock_data
+from et_backend.config import settings
+from et_backend.db.session import get_db_session
+from et_backend.utils.response import StandardResponse
+from et_backend.utils.cache import get_all_cache_stats
+from et_backend.exceptions import DatabaseError, ExternalAPIError
+from et_backend.data.fetcher import get_single_stock_data
 
 # Create router
 router = APIRouter(prefix="/health", tags=["health"])

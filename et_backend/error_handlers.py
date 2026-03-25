@@ -13,8 +13,8 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError, OperationalError
 from pydantic import ValidationError as PydanticValidationError
 import traceback
 
-from config import settings
-from exceptions import (
+from et_backend.config import settings
+from et_backend.exceptions import (
     SignalForgeException,
     AuthenticationError,
     AuthorizationError,
@@ -28,7 +28,7 @@ from exceptions import (
     RateLimitError,
     ConfigurationError
 )
-from utils.response import StandardResponse
+from et_backend.utils.response import StandardResponse
 
 logger = logging.getLogger(__name__)
 

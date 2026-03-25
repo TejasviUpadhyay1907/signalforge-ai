@@ -306,3 +306,5 @@ def generate_full_context(signal_type: str, closing_prices: List[float],
         return f"{price_context}, {volume_context}"
     else:
         return f"{price_context}, {volume_context}"
+def generate_full_context_batch(data_list): 
+    return [generate_full_context(data) for data in data_list]

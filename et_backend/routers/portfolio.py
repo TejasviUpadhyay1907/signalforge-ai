@@ -9,16 +9,16 @@ from sqlalchemy.orm import Session
 from typing import List
 import logging
 
-from ..db.session import get_db_session
-from ..services.portfolio_service import PortfolioService
-from ..schemas.portfolio import (
+from et_backend.db.session import get_db_session
+from et_backend.services.portfolio_service import PortfolioService
+from et_backend.schemas.portfolio import (
     PortfolioItemCreate, 
     PortfolioItemResponse, 
     PortfolioItemRemove,
     PortfolioListResponse
 )
-from ..utils.logger import get_logger
-from ..utils.response import StandardResponse
+from et_backend.utils.logger import get_logger
+from et_backend.utils.response import StandardResponse
 
 # Create router
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
@@ -87,7 +87,11 @@ async def add_portfolio_item(
     """
     try:
         # Use service layer
-        portfolio_item = PortfolioService.add_portfolio_item(db, item)
+        portfolio_service = PortfolioService() 
+        portfolio_item = portfolio_service.add_portfolio_item(
+             db, 
+             item 
+        )
         
         item_response = PortfolioItemResponse(
             id=portfolio_item.id,

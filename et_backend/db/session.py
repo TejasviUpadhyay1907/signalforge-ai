@@ -9,7 +9,7 @@ from typing import Generator
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from .base import SessionLocal
-from ..utils.logger import get_logger
+from et_backend.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

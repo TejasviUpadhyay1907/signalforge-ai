@@ -12,8 +12,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 import logging
 
-from config import settings
-from exceptions import AuthenticationError, AuthorizationError, ConfigurationError
+from et_backend.config import settings
+from et_backend.exceptions import AuthenticationError, AuthorizationError, ConfigurationError
 
 logger = logging.getLogger(__name__)
 

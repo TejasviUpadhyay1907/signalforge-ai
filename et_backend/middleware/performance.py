@@ -8,8 +8,8 @@ import time
 import uuid
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-from ..utils.logger import api_logger
-from ..utils.cache import cleanup_expired_cache
+from et_backend.utils.logger import api_logger
+from et_backend.utils.cache import cleanup_expired_cache
 
 
 class PerformanceMiddleware(BaseHTTPMiddleware):

@@ -3,7 +3,7 @@ Assistant Router for SignalForge
 
 This module contains API endpoints for AI assistant functionality.
 """
-
+from fastapi import Depends
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import Optional, Dict, Any
@@ -11,12 +11,12 @@ import logging
 from datetime import datetime
 import asyncio
 
-from ..db.session import get_db_session
-from ..models.user import User
-from ..models.portfolio import PortfolioItem
-from ..ai.assistant import get_assistant, chat_with_assistant
-from ..schemas.assistant import ChatRequest, ChatResponse, AssistantStatusResponse
-from ..utils.response import StandardResponse
+from et_backend.db.session import get_db_session
+from et_backend.models.user import User
+from et_backend.models.portfolio import PortfolioItem
+from et_backend.ai.assistant import get_assistant, chat_with_assistant
+from et_backend.schemas.assistant import ChatRequest, ChatResponse, AssistantStatusResponse
+from et_backend.utils.response import StandardResponse
 
 # Create router
 router = APIRouter(prefix="/assistant", tags=["assistant"])

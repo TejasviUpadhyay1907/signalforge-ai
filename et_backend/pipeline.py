@@ -10,12 +10,12 @@ import logging
 from datetime import datetime
 
 # Import all existing modules
-from data.fetcher import fetch_stock_data, validate_stock_data
-from signals.detector import detect_signals_batch
-from context.context_engine import generate_full_context
-from scoring.scorer import calculate_signal_score
-from ai.explainer import AIExplainer, generate_explanation_batch
-from ranking.ranker import rank_stocks_by_score, filter_by_strength, format_ranked_results
+from et_backend.data.fetcher import fetch_stock_data, validate_stock_data
+from et_backend.signals.detector import detect_signals_batch
+from et_backend.context.context_engine import generate_full_context
+from et_backend.scoring.scorer import calculate_signal_score
+from et_backend.ai.explainer import AIExplainer, generate_explanation_batch
+from et_backend.ranking.ranker import rank_stocks_by_score, filter_by_strength, format_ranked_results
 
 logger = logging.getLogger(__name__)
 

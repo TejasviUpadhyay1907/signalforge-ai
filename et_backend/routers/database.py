@@ -9,11 +9,11 @@ from sqlalchemy.orm import Session
 from typing import Dict, Any, List
 from datetime import datetime
 
-from ..db.session import get_db_session, DatabaseManager
-from ..db.base import create_tables, drop_tables, check_database_connection
-from ..models.user import User
-from ..models.portfolio import PortfolioItem
-from ..utils.logger import get_logger
+from et_backend.db.session import get_db_session, DatabaseManager
+from et_backend.db.base import create_tables, drop_tables, check_database_connection
+from et_backend.models.user import User
+from et_backend.models.portfolio import PortfolioItem
+from et_backend.utils.logger import get_logger
 
 # Create router
 router = APIRouter(prefix="/database", tags=["database"])
