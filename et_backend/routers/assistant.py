@@ -41,48 +41,80 @@ async def chat_with_ai(
         AI assistant response with related stocks
     """
     try:
-        # Verify user exists
+        # Auto-create user if not found so chat always works
         user = db.query(User).filter(User.id == request.user_id).first()
         if not user:
-            return StandardResponse.not_found("User")
+            user = User(id=request.user_id)
+            db.add(user)
+            db.commit()
+            logger.info(f"Auto-created user {request.user_id} for chat")
         
         # Generate AI response with stock analysis
         start_time = datetime.now()
         
         try:
-            # Use enhanced chat method that includes stock analysis
+            # Optionally pass portfolio symbols for portfolio-intent queries
+            portfolio_symbols = None
+            portfolio_items = db.query(PortfolioItem).filter(
+                PortfolioItem.user_id == request.user_id
+            ).all()
+            if portfolio_items:
+                portfolio_symbols = [item.symbol + ".NS" for item in portfolio_items]
+
             assistant = get_assistant()
-            chat_result = await assistant.chat(request.message, request.user_id)
-            
-            ai_response = chat_result['response']
-            related_stocks = chat_result['related_stocks']
-            provider_used = assistant.api_provider
-            
+            chat_result = await assistant.chat(
+                request.message,
+                request.user_id,
+                portfolio_symbols=portfolio_symbols,
+            )
+
+            provider_used = chat_result.get("metadata", {}).get("provider_used", assistant.api_provider)
+
         except Exception as e:
             logger.error(f"AI assistant error: {str(e)}")
-            ai_response = "I'm having trouble connecting right now. Please try again later. For immediate assistance, I can help explain stock market concepts, investment strategies, or technical analysis basics."
-            related_stocks = []
+            chat_result = {
+                "response": "I'm having trouble connecting right now. Please try again later.",
+                "related_stocks": [],
+                "intent": "general_chat",
+                "summary": {},
+                "risky_stocks": [],
+                "opportunities": [],
+                "portfolio_insights": [],
+                "suggested_actions": [],
+                "follow_up_prompts": [],
+                "metadata": {"provider_used": "fallback", "fallback_used": True},
+            }
             provider_used = "fallback"
-        
+
         processing_time = (datetime.now() - start_time).total_seconds()
-        
-        # Log conversation for analytics (background task)
+
         background_tasks.add_task(
             _log_conversation,
             request.user_id,
             request.message,
-            ai_response,
+            chat_result.get("response", ""),
             provider_used,
-            processing_time
+            processing_time,
         )
-        
+
         return StandardResponse.success({
-            'response': ai_response,
-            'related_stocks': related_stocks,
-            'user_id': request.user_id,
-            'timestamp': datetime.now().isoformat(),
-            'provider_used': provider_used,
-            'processing_time': round(processing_time, 2)
+            # backward-compatible fields
+            'response':          chat_result.get('response', ''),
+            'related_stocks':    chat_result.get('related_stocks', []),
+            # new structured fields
+            'intent':            chat_result.get('intent', 'general_chat'),
+            'summary':           chat_result.get('summary', {}),
+            'risky_stocks':      chat_result.get('risky_stocks', []),
+            'opportunities':     chat_result.get('opportunities', []),
+            'portfolio_insights': chat_result.get('portfolio_insights', []),
+            'suggested_actions': chat_result.get('suggested_actions', []),
+            'follow_up_prompts': chat_result.get('follow_up_prompts', []),
+            'metadata':          chat_result.get('metadata', {}),
+            # envelope fields
+            'user_id':           request.user_id,
+            'timestamp':         datetime.now().isoformat(),
+            'provider_used':     provider_used,
+            'processing_time':   round(processing_time, 2),
         }, f"Chat response generated using {provider_used}")
         
     except Exception as e:

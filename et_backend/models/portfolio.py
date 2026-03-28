@@ -7,6 +7,7 @@ This module defines the PortfolioItem model for user portfolio management.
 from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+import uuid
 from ..db.base import Base
 
 
@@ -20,7 +21,7 @@ class PortfolioItem(Base):
     __tablename__ = "portfolio_items"
     
     # Primary key
-    id = Column(String, primary_key=True, index=True, comment="Portfolio item ID")
+    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()), comment="Portfolio item ID")
     
     # Foreign key to User
     user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True, comment="User ID")
@@ -29,6 +30,7 @@ class PortfolioItem(Base):
     symbol = Column(String(10), nullable=False, index=True, comment="Stock symbol (e.g., RELIANCE)")
     quantity = Column(Integer, nullable=False, comment="Number of shares owned")
     avg_price = Column(Float, nullable=False, comment="Average purchase price per share")
+    total_value = Column(Float, nullable=False, default=0.0, comment="Total value of holdings (quantity * avg_price)")
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="Portfolio item creation timestamp")
@@ -54,16 +56,7 @@ class PortfolioItem(Base):
             "symbol": self.symbol,
             "quantity": self.quantity,
             "avg_price": self.avg_price,
+            "total_value": self.total_value,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
-    
-    @property
-    def total_value(self) -> float:
-        """
-        Calculate total value of this portfolio item.
-        
-        Returns:
-            Total value (quantity * avg_price)
-        """
-        return self.quantity * self.avg_price

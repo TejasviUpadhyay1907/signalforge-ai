@@ -260,8 +260,11 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         
         # Remove server information
-        if "server" in response.headers: 
-            del response.headers["server"]
+        try:
+            if "server" in response.headers:
+                response.headers["server"] = "SignalForge"
+        except Exception:
+            pass
         
         return response
 

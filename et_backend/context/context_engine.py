@@ -306,5 +306,27 @@ def generate_full_context(signal_type: str, closing_prices: List[float],
         return f"{price_context}, {volume_context}"
     else:
         return f"{price_context}, {volume_context}"
-def generate_full_context_batch(data_list): 
-    return [generate_full_context(data) for data in data_list]
+def generate_full_context_batch(signals: Dict, stock_data: Dict) -> Dict:
+    """
+    Generate context for multiple signals.
+
+    Args:
+        signals: Dict of symbol -> signal result
+        stock_data: Dict of symbol -> stock data
+
+    Returns:
+        Dict of symbol -> context string
+    """
+    results = {}
+    for symbol, signal in signals.items():
+        data = stock_data.get(symbol, {})
+        closing_prices = data.get('last_5_days_closes', [])
+        price_change = signal.get('price_change', 0.0)
+        volume_spike = signal.get('volume_spike', False)
+        results[symbol] = generate_full_context(
+            signal.get('signal_type', 'Weak'),
+            closing_prices,
+            price_change,
+            volume_spike
+        )
+    return results

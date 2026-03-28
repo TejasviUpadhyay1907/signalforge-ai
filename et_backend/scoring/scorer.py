@@ -241,5 +241,37 @@ Score Breakdown:
     
     return breakdown
     
-def calculate_signal_score_batch(signals): 
-    return [calculate_signal_score(signal) for signal in signals]
+def calculate_signal_score_batch(signals: Dict, context_data: Dict, stock_data: Dict) -> list:
+    """
+    Score multiple signals in batch, returning a list of enriched signal dicts.
+
+    Args:
+        signals: Dict of symbol -> signal result from detector
+        context_data: Dict of symbol -> context string
+        stock_data: Dict of symbol -> raw stock data
+
+    Returns:
+        List of enriched signal dicts with score, symbol, current_price, etc.
+    """
+    results = []
+    for symbol, signal in signals.items():
+        data = stock_data.get(symbol, {})
+        score_result = calculate_signal_score(
+            signal.get('price_change', 0.0),
+            data.get('volume', 0),
+            signal.get('volume_spike', False),
+            signal.get('trend', 'weak'),
+            signal.get('signal_type', 'Weak')
+        )
+        results.append({
+            'symbol': symbol,
+            'signal_type': signal.get('signal_type', 'Weak'),
+            'trend': signal.get('trend', 'weak'),
+            'score': score_result['total_score'],
+            'strength': score_result['strength'],
+            'price_change': signal.get('price_change', 0.0),
+            'volume_spike': signal.get('volume_spike', False),
+            'current_price': data.get('current_price', 0),
+            'context': context_data.get(symbol, ''),
+        })
+    return results

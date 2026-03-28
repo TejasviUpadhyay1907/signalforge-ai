@@ -179,40 +179,26 @@ Write the explanation:
     
     def generate_fallback_explanation(self, stock_name: str, signal_type: str, 
                                     context: str, score: int) -> str:
-        """
-        Generate local fallback explanation without any API calls.
-        
-        Args:
-            stock_name: Name of stock
-            signal_type: Type of signal detected
-            context: Market context description
-            score: Confidence score (0-100)
-            
-        Returns:
-            Local explanation string
-        """
-        # Create unique, concise explanations (max 25 words)
+        """Generate local fallback explanation without any API calls."""
         if signal_type == "Breakout":
             if score >= 80:
-                return f"{stock_name} breaks out with strong volume support."
+                return f"{stock_name} breaks out with strong volume support and price confirmation."
             elif score >= 55:
-                return f"{stock_name} shows breakout pattern with solid participation."
+                return f"{stock_name} shows breakout pattern with solid volume participation."
             else:
-                return f"{stock_name} displays early breakout signs with initial momentum."
-        
+                return f"{stock_name} displays early breakout signs — needs volume confirmation."
         elif signal_type == "Momentum":
             if score >= 80:
-                return f"{stock_name} demonstrates strong upward momentum consistently."
+                return f"{stock_name} demonstrates strong upward momentum with consistent buying."
             elif score >= 55:
-                return f"{stock_name} builds steady momentum with growing confidence."
+                return f"{stock_name} builds steady momentum with growing institutional interest."
             else:
-                return f"{stock_name} shows developing momentum with selective interest."
-        
-        else:  # Weak signal
+                return f"{stock_name} shows developing momentum — watch for volume increase."
+        else:
             if score >= 40:
-                return f"{stock_name} shows weak momentum despite price movement."
+                return f"{stock_name} shows weak momentum — consolidating without clear direction."
             else:
-                return f"{stock_name} displays weak signal with limited participation."
+                return f"{stock_name} displays weak signal with limited market participation."
     
     def _clean_explanation(self, explanation: str) -> str:
         """

@@ -6,9 +6,36 @@ import App from './App.jsx';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-if (!PUBLISHABLE_KEY) {
-  throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY in environment variables');
-}
+if (!PUBLISHABLE_KEY || PUBLISHABLE_KEY === 'pk_test_placeholder_replace_with_your_key') {
+  // Render a helpful setup message instead of crashing
+  createRoot(document.getElementById('root')).render(
+    <StrictMode>
+      <div style={{
+        minHeight: '100vh', background: '#0a0a0a', color: '#f5f5f7',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: 'Inter, system-ui, sans-serif', padding: '2rem'
+      }}>
+        <div style={{ maxWidth: 480, textAlign: 'center' }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🔑</div>
+          <h1 style={{ color: '#D4AF37', marginBottom: 12 }}>Clerk Key Required</h1>
+          <p style={{ color: '#9ca3af', lineHeight: 1.6, marginBottom: 16 }}>
+            Add your Clerk publishable key to <code style={{ color: '#D4AF37' }}>frontend/.env</code>:
+          </p>
+          <pre style={{
+            background: '#111', border: '1px solid #333', borderRadius: 8,
+            padding: '12px 16px', textAlign: 'left', fontSize: 13, color: '#e5e7eb'
+          }}>
+            VITE_CLERK_PUBLISHABLE_KEY=pk_test_your_key_here
+          </pre>
+          <p style={{ color: '#6b7280', fontSize: 13, marginTop: 12 }}>
+            Get your key at{' '}
+            <a href="https://dashboard.clerk.com" style={{ color: '#D4AF37' }}>dashboard.clerk.com</a>
+          </p>
+        </div>
+      </div>
+    </StrictMode>
+  );
+} else {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -83,3 +110,4 @@ createRoot(document.getElementById('root')).render(
     </ClerkProvider>
   </StrictMode>,
 );
+}

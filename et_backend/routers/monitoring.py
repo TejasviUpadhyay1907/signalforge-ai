@@ -185,7 +185,7 @@ async def clear_all_caches():
         Cache clearing result
     """
     try:
-        from ..utils.cache import stock_data_cache, signal_cache, portfolio_cache, api_response_cache
+        from et_backend.utils.cache import stock_data_cache, signal_cache, portfolio_cache, api_response_cache
         
         cleared_items = 0
         cleared_items += len(stock_data_cache._cache)
@@ -262,36 +262,28 @@ async def get_recent_logs(lines: int = 50):
 
 @router.get("/metrics")
 async def get_application_metrics():
-    """
-    Get application-level metrics.
-    
-    Returns:
-        Application performance metrics
-    """
+    """Get application-level metrics."""
     try:
-        # This would be enhanced with actual metrics collection
-        metrics = {
+        cache_stats = get_all_cache_stats()
+        total_hits = sum(s.get("hits", 0) for s in cache_stats.values() if isinstance(s, dict))
+        total_misses = sum(s.get("misses", 0) for s in cache_stats.values() if isinstance(s, dict))
+        total_requests = total_hits + total_misses
+        hit_rate = round(total_hits / total_requests * 100, 2) if total_requests > 0 else 0
+
+        return {
             "timestamp": datetime.utcnow().isoformat(),
-            "api_endpoints": {
-                "/scan": {"calls": 0, "avg_response_time_ms": 0},
-                "/stock/{symbol}": {"calls": 0, "avg_response_time_ms": 0},
-                "/portfolio": {"calls": 0, "avg_response_time_ms": 0},
-                "/assistant/chat": {"calls": 0, "avg_response_time_ms": 0}
+            "cache": {
+                "total_requests": total_requests,
+                "hits": total_hits,
+                "misses": total_misses,
+                "hit_rate_percent": hit_rate,
+                "cached_items": cache_stats.get("total_items", 0),
             },
-            "errors": {
-                "total_errors": 0,
-                "error_rate_percent": 0,
-                "last_error": None
-            },
-            "performance": {
-                "avg_response_time_ms": 0,
-                "p95_response_time_ms": 0,
-                "p99_response_time_ms": 0
+            "system": {
+                "cpu_percent": psutil.cpu_percent(),
+                "memory_percent": psutil.virtual_memory().percent,
             }
         }
-        
-        return metrics
-        
     except Exception as e:
         logger.logger.error(f"Application metrics failed: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to get application metrics")

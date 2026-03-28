@@ -4,6 +4,7 @@ Portfolio Service for SignalForge
 This module contains business logic for portfolio management operations.
 """
 from et_backend.models.portfolio import PortfolioItem
+from et_backend.models.user import User
 from et_backend.schemas.portfolio import PortfolioItemCreate
 
 from sqlalchemy.orm import Session
@@ -111,11 +112,7 @@ class PortfolioService:
                 # Perform signal analysis
                 try:
                     # Detect signal
-                    signal_result = detect_signal(
-                        stock_data['last_5_days_closes'],
-                        stock_data['volume'],
-                        stock_data['last_5_days_closes'][-1] - stock_data['last_5_days_closes'][0]
-                    )
+                    signal_result = detect_signal(stock_data)
                     
                     # Generate context
                     context = generate_full_context(

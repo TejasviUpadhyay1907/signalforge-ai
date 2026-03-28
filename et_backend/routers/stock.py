@@ -18,6 +18,31 @@ from et_backend.utils.cache import api_response_cache
 router = APIRouter(prefix="/stock", tags=["stock"])
 logger = get_logger(__name__)
 
+# Known NSE stocks for search
+_STOCK_DIRECTORY = {
+    "RELIANCE": "Reliance Industries", "TCS": "Tata Consultancy Services",
+    "HDFCBANK": "HDFC Bank", "INFY": "Infosys", "HINDUNILVR": "Hindustan Unilever",
+    "ICICIBANK": "ICICI Bank", "KOTAKBANK": "Kotak Mahindra Bank", "SBIN": "State Bank of India",
+    "BAJFINANCE": "Bajaj Finance", "BHARTIARTL": "Bharti Airtel", "WIPRO": "Wipro",
+    "HCLTECH": "HCL Technologies", "AXISBANK": "Axis Bank", "MARUTI": "Maruti Suzuki",
+    "TATAMOTORS": "Tata Motors", "TATASTEEL": "Tata Steel", "SUNPHARMA": "Sun Pharma",
+    "CIPLA": "Cipla", "DRREDDY": "Dr Reddy's", "ONGC": "ONGC", "ITC": "ITC",
+    "NESTLEIND": "Nestle India", "ADANIPORTS": "Adani Ports", "JSWSTEEL": "JSW Steel",
+    "TECHM": "Tech Mahindra", "LTIM": "LTIMindtree",
+}
+
+
+@router.get("/search")
+async def search_stocks(q: str = Query(..., min_length=1, description="Search query")):
+    """Search NSE stocks by symbol or company name."""
+    query = q.upper().strip()
+    results = [
+        {"symbol": sym, "name": name}
+        for sym, name in _STOCK_DIRECTORY.items()
+        if query in sym or query in name.upper()
+    ]
+    return StandardResponse.success({"results": results, "count": len(results)}, f"Found {len(results)} stocks")
+
 
 @router.get("/{symbol}")
 async def get_stock_detail(

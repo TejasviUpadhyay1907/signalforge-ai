@@ -180,11 +180,7 @@ class StockService:
         """
         try:
             # Detect signal using existing detector
-            signal_result = detect_signal(
-                stock_data['last_5_days_closes'],
-                stock_data['volume'],
-                stock_data['last_5_days_closes'][-1] - stock_data['last_5_days_closes'][0]
-            )
+            signal_result = detect_signal(stock_data)
             
             # Generate context
             context = generate_full_context(

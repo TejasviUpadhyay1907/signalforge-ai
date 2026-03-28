@@ -39,7 +39,7 @@ async def get_database_status():
         
         if connection_ok:
             # Get additional stats when connected
-            from ..db.base import engine, DATABASE_URL
+            from et_backend.db.base import engine, DATABASE_URL
             
             status.update({
                 "database_url": DATABASE_URL.split("@")[-1] if "@" in DATABASE_URL else DATABASE_URL,  # Hide credentials
@@ -72,7 +72,7 @@ async def get_database_stats(db: Session = Depends(get_db_session)):
         portfolio_count = db.query(PortfolioItem).count()
         
         # Get table information
-        from ..db.base import Base
+        from et_backend.db.base import Base
         table_names = Base.metadata.tables.keys()
         
         stats = {

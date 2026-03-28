@@ -11,7 +11,8 @@ from datetime import datetime
 from et_backend.utils.cache import stock_data_cache
 from et_backend.utils.logger import get_logger
 
-logger = get_logger(__name__)
+_structured_logger = get_logger(__name__)
+logger = _structured_logger.logger  # use the underlying stdlib logger directly
 
 
 def fetch_stock_data(symbols: List[str], period: str = "1mo") -> Dict[str, Dict]:

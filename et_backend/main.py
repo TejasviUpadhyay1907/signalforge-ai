@@ -13,6 +13,7 @@ Production-ready FastAPI backend with comprehensive features:
 
 import time
 import asyncio
+from datetime import datetime
 from typing import Optional, List, Dict, Any
 from contextlib import asynccontextmanager
 from fastapi import FastAPI,Depends,Request, HTTPException, status
@@ -322,21 +323,18 @@ async def get_default_stocks():
     }
 
 
-# Error handlers
-@app.exception_handler(404)
-async def not_found_handler(request, exc):
-    return JSONResponse(
-        status_code=404,
-        content={"error": "Resource not found", "detail": str(exc)}
-    )
-
-
-@app.exception_handler(500)
-async def internal_error_handler(request, exc):
-    return JSONResponse(
-        status_code=500,
-        content={"error": "Internal server error", "detail": str(exc)}
-    )
+@app.get("/scan/sectors")
+async def get_sectors():
+    """Get available sectors and their stock symbols."""
+    sectors = {
+        "banking":  ["HDFCBANK.NS", "ICICIBANK.NS", "KOTAKBANK.NS", "SBIN.NS", "AXISBANK.NS"],
+        "it":       ["TCS.NS", "INFY.NS", "WIPRO.NS", "HCLTECH.NS", "TECHM.NS"],
+        "energy":   ["RELIANCE.NS", "ONGC.NS"],
+        "fmcg":     ["HINDUNILVR.NS", "ITC.NS", "NESTLEIND.NS"],
+        "auto":     ["MARUTI.NS", "TATAMOTORS.NS"],
+        "pharma":   ["SUNPHARMA.NS", "CIPLA.NS", "DRREDDY.NS"],
+    }
+    return StandardResponse.success({"sectors": sectors, "count": len(sectors)}, "Sectors retrieved")
 
 
 # Run instructions

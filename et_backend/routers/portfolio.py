@@ -184,6 +184,56 @@ async def get_portfolio_value(
         return StandardResponse.server_error("Failed to calculate portfolio value")
 
 
+@router.get("/signals")
+async def get_portfolio_signals(
+    user_id: str = Query(..., description="User ID from authentication provider"),
+    db: Session = Depends(get_db_session)
+):
+    """
+    Get live signals for all stocks in user's portfolio.
+
+    Returns signal type, confidence score, and trend for each holding.
+    """
+    try:
+        from et_backend.data.fetcher import fetch_stock_data
+        from et_backend.signals.detector import detect_signal
+        from et_backend.scoring.scorer import calculate_signal_score
+        from et_backend.models.portfolio import PortfolioItem
+
+        items = db.query(PortfolioItem).filter(PortfolioItem.user_id == user_id).all()
+        if not items:
+            return StandardResponse.success({"signals": [], "total": 0}, "No portfolio items found")
+
+        symbols = [item.symbol if item.symbol.endswith(".NS") else item.symbol + ".NS" for item in items]
+        stock_data = fetch_stock_data(symbols)
+
+        signals = []
+        for symbol in symbols:
+            data = stock_data.get(symbol, {})
+            if not data or data.get("error"):
+                continue
+            sig = detect_signal(data)
+            score = calculate_signal_score(
+                sig["price_change"], data.get("volume", 0),
+                sig["volume_spike"], sig["trend"], sig["signal_type"]
+            )
+            signals.append({
+                "symbol": symbol.replace(".NS", ""),
+                "signal": sig["signal_type"],
+                "confidence": int(score["total_score"]),
+                "trend": sig["trend"],
+                "price_change": sig["price_change"],
+                "current_price": data.get("current_price", 0),
+            })
+
+        signals.sort(key=lambda x: x["confidence"], reverse=True)
+        return StandardResponse.success({"signals": signals, "total": len(signals)}, f"Signals retrieved for {len(signals)} portfolio stocks")
+
+    except Exception as e:
+        logger.logger.error(f"Error fetching portfolio signals: {str(e)}")
+        return StandardResponse.server_error("Failed to fetch portfolio signals")
+
+
 @router.get("/summary")
 async def get_portfolio_summary(
     user_id: str = Query(..., description="User ID from authentication provider"),
