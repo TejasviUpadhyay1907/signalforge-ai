@@ -251,18 +251,49 @@ export default function PortfolioPage() {
     return 'Low';
   })();
 
-  // Risk distribution by invested value (not count)
+  // Risk distribution by current value (not count) - fully dynamic with live prices
   const riskDistribution = useMemo(() => {
-    const buckets = { low: 0, medium: 0, high: 0 };
-    for (const h of dbHoldings) {
-      const val = h.price * h.shares;
-      buckets[h.risk.toLowerCase()] = (buckets[h.risk.toLowerCase()] || 0) + val;
+    if (dbHoldings.length === 0) {
+      return {
+        low: { percent: 0, value: 0 },
+        medium: { percent: 0, value: 0 },
+        high: { percent: 0, value: 0 },
+      };
     }
-    const total = Object.values(buckets).reduce((a, b) => a + b, 0) || 1;
+
+    const buckets = { low: 0, medium: 0, high: 0 };
+    
+    // Calculate bucket values using current live prices
+    for (const h of dbHoldings) {
+      const currentValue = h.price * h.shares;
+      const riskKey = h.risk.toLowerCase();
+      buckets[riskKey] = (buckets[riskKey] || 0) + currentValue;
+    }
+    
+    // Calculate total from buckets to ensure consistency
+    const total = buckets.low + buckets.medium + buckets.high;
+    
+    if (total === 0) {
+      return {
+        low: { percent: 0, value: 0 },
+        medium: { percent: 0, value: 0 },
+        high: { percent: 0, value: 0 },
+      };
+    }
+    
     return {
-      low: Math.round((buckets.low / total) * 100),
-      medium: Math.round((buckets.medium / total) * 100),
-      high: Math.round((buckets.high / total) * 100),
+      low: { 
+        percent: Math.round((buckets.low / total) * 100), 
+        value: buckets.low 
+      },
+      medium: { 
+        percent: Math.round((buckets.medium / total) * 100), 
+        value: buckets.medium 
+      },
+      high: { 
+        percent: Math.round((buckets.high / total) * 100), 
+        value: buckets.high 
+      },
     };
   }, [dbHoldings]);
 
@@ -560,14 +591,14 @@ export default function PortfolioPage() {
           <div className="glass-card rounded-xl p-5">
             <span className="text-sm font-medium text-white block mb-3">Risk Distribution</span>
             <div className="space-y-3">
-              {Object.entries(riskDistribution).map(([k, v]) => (
+              {Object.entries(riskDistribution).map(([k, data]) => (
                 <div key={k}>
                   <div className="flex justify-between text-[11px] text-gray-500 mb-1">
-                    <span className="capitalize">{k} Risk ({v}%)</span>
-                    <span>{fmtPrice((totalValue * v) / 100)}</span>
+                    <span className="capitalize">{k} Risk ({data.percent}%)</span>
+                    <span>{fmtPrice(data.value)}</span>
                   </div>
                   <div className="w-full h-1 bg-surfaceBorder rounded-full">
-                    <div className={`h-full rounded-full transition-all duration-700 ${k === 'low' ? 'bg-signal-green' : k === 'medium' ? 'bg-signal-amber' : 'bg-signal-red'}`} style={{ width: `${v}%` }} />
+                    <div className={`h-full rounded-full transition-all duration-700 ${k === 'low' ? 'bg-signal-green' : k === 'medium' ? 'bg-signal-amber' : 'bg-signal-red'}`} style={{ width: `${data.percent}%` }} />
                   </div>
                 </div>
               ))}
