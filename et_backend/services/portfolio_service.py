@@ -158,7 +158,10 @@ class PortfolioService:
             total_pnl = total_value - total_cost
             
             enhanced_item = {
+                'id': item.id,
                 'symbol': item.symbol,
+                'company_name': item.symbol,  # Add company name (using symbol as fallback)
+                'exchange': 'NSE',  # Default exchange
                 'quantity': item.quantity,
                 'avg_price': item.avg_price,
                 'current_price': current_price,

@@ -171,44 +171,61 @@ export default function PortfolioPage() {
   );
   const { prices: livePrices, lastUpdated: pricesUpdatedAt, wsConnected } = usePortfolioPrices(dbSymbols);
 
-  // ── Holdings — P&L computed from live prices ──────────────────────────────
-  const dbHoldings = useMemo(() => (portfolioData?.holdings || []).map(h => {
-    // Priority: livePrices (15s poll) > h.currentPrice (from /api/portfolio) > h.averagePrice (fallback)
-    const live = livePrices[h.symbol];
-    const avg = parseFloat(h.averagePrice || h.average_price || 0);
-    
-    // CRITICAL FIX: Always have a valid price, use avg as last resort
-    let price = avg; // Start with average as fallback
-    if (live?.price > 0) {
-      price = live.price; // Best: live WebSocket/polling price
-    } else if (h.currentPrice > 0) {
-      price = h.currentPrice; // Good: backend-fetched current price
+  // Debug: Log live prices when they update
+  useEffect(() => {
+    if (Object.keys(livePrices).length > 0) {
+      console.log('[Portfolio] Live prices updated:', livePrices, 'at', pricesUpdatedAt);
     }
-    // If still zero, keep avg as fallback so calculations don't break
-    
-    const qty = parseFloat(h.quantity || 0);
-    const cost = qty * avg;
-    const currentValue = qty * price;
-    const pnl = cost > 0 ? currentValue - cost : 0;
-    const pnlPct = cost > 0 ? (pnl / cost) * 100 : 0;
+  }, [livePrices, pricesUpdatedAt]);
 
-    return {
-      symbol: h.symbol,
-      name: h.company_name || h.symbol,
-      price,
-      prevPrice: live?.prevPrice ?? price,
-      shares: qty,
-      signal: price > avg * 1.005 ? 'Buy' : price < avg * 0.97 ? 'Sell' : 'Hold',
-      confidence: Math.min(90, Math.max(40, 50 + Math.round(pnlPct * 3))),
-      risk: Math.abs(pnlPct) > 10 ? 'High' : Math.abs(pnlPct) > 5 ? 'Medium' : 'Low',
-      change: live?.changePercent ?? h.changePercent ?? 0,
-      pnl: Math.round(pnl * 100) / 100,
-      pnlPct: Math.round(pnlPct * 100) / 100,
-      id: h.id,
-      averagePrice: avg,
-    };
+  // ── Holdings — P&L computed from live prices ──────────────────────────────
+  const dbHoldings = useMemo(() => {
+    console.log('[Portfolio] Recalculating dbHoldings. Portfolio data:', portfolioData?.holdings, 'Live prices:', livePrices);
+    
+    return (portfolioData?.holdings || []).map(h => {
+      // Priority: livePrices (15s poll) > h.currentPrice (from /api/portfolio) > h.averagePrice (fallback)
+      const live = livePrices[h.symbol];
+      const avg = parseFloat(h.averagePrice || h.average_price || 0);
+      
+      // CRITICAL FIX: Always have a valid price, use avg as last resort
+      let price = avg; // Start with average as fallback
+      if (live?.price > 0) {
+        price = live.price; // Best: live WebSocket/polling price
+        console.log(`[Portfolio] Using live price for ${h.symbol}: ${price}`);
+      } else if (h.currentPrice > 0) {
+        price = h.currentPrice; // Good: backend-fetched current price
+        console.log(`[Portfolio] Using backend price for ${h.symbol}: ${price}`);
+      } else {
+        console.log(`[Portfolio] Using average price for ${h.symbol}: ${price}`);
+      }
+      // If still zero, keep avg as fallback so calculations don't break
+      
+      const qty = parseFloat(h.quantity || 0);
+      const cost = qty * avg;
+      const currentValue = qty * price;
+      const pnl = cost > 0 ? currentValue - cost : 0;
+      const pnlPct = cost > 0 ? (pnl / cost) * 100 : 0;
+
+      console.log(`[Portfolio] ${h.symbol}: price=${price}, avg=${avg}, qty=${qty}, pnl=${pnl}, pnlPct=${pnlPct}%`);
+
+      return {
+        symbol: h.symbol,
+        name: h.company_name || h.symbol,
+        price,
+        prevPrice: live?.prevPrice ?? price,
+        shares: qty,
+        signal: price > avg * 1.005 ? 'Buy' : price < avg * 0.97 ? 'Sell' : 'Hold',
+        confidence: Math.min(90, Math.max(40, 50 + Math.round(pnlPct * 3))),
+        risk: Math.abs(pnlPct) > 10 ? 'High' : Math.abs(pnlPct) > 5 ? 'Medium' : 'Low',
+        change: live?.changePercent ?? h.changePercent ?? 0,
+        pnl: Math.round(pnl * 100) / 100,
+        pnlPct: Math.round(pnlPct * 100) / 100,
+        id: h.id,
+        averagePrice: avg,
+      };
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [portfolioData?.holdings, livePrices]);
+  }, [portfolioData?.holdings, livePrices]);
 
   const confirmedSymbols = new Set(dbHoldings.map(h => h.symbol));
   const pendingOptimistic = optimisticHoldings
