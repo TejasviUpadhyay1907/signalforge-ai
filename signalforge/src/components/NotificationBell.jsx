@@ -110,7 +110,7 @@ export default function NotificationBell() {
       {/* Dropdown - Proper floating overlay */}
       {isOpen && (
         <div 
-          className="fixed top-[4.5rem] right-6 w-80 bg-[#0f0f13] border border-white/[0.12] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] backdrop-blur-xl z-[10000] overflow-hidden animate-slideDown"
+          className="absolute top-full right-0 mt-2 w-80 bg-[#0f0f13] border border-white/[0.12] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] backdrop-blur-xl z-[10000] overflow-hidden animate-slideDown"
           style={{ maxHeight: 'calc(100vh - 6rem)' }}
         >
           {/* Header */}
