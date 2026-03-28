@@ -882,7 +882,10 @@ async def api_get_portfolio(user_id: str = Query(..., description="Clerk user ID
         from services.database import get_holdings
         from services.stock_provider import get_quote
 
+        logger.info(f"Fetching portfolio for user: {user_id}")
         holdings = get_holdings(user_id)
+        logger.info(f"Retrieved {len(holdings)} holdings from DB for user {user_id}")
+        
         if not holdings:
             return StandardResponse.success({
                 "holdings": [], "totalValue": 0, "totalCost": 0,
@@ -938,6 +941,7 @@ async def api_get_portfolio(user_id: str = Query(..., description="Clerk user ID
         total_pnl = total_value - total_cost
         total_pnl_pct = (total_pnl / total_cost * 100) if total_cost > 0 else 0
 
+        logger.info(f"Portfolio fetch complete: user={user_id} holdings={len(enriched)} totalValue={total_value}")
         return StandardResponse.success({
             "holdings": enriched,
             "totalValue": round(total_value, 2),
@@ -947,7 +951,7 @@ async def api_get_portfolio(user_id: str = Query(..., description="Clerk user ID
             "isEmpty": False,
         })
     except Exception as e:
-        logger.error(f"Portfolio fetch error: {e}")
+        logger.error(f"Portfolio fetch error for user {user_id}: {e}", exc_info=True)
         return StandardResponse.server_error(str(e))
 
 
@@ -996,20 +1000,38 @@ async def api_add_holding(payload: dict):
         from services.database import add_holding
         user_id = payload.get("userId", "")
         if not user_id:
+            logger.error("Add holding failed: userId missing from payload")
             return StandardResponse.bad_request("userId required")
+        
+        symbol = payload.get("symbol", "").upper()
+        quantity = float(payload.get("quantity", 0))
+        average_price = float(payload.get("averagePrice", 0))
+        
+        if not symbol:
+            logger.error("Add holding failed: symbol missing from payload")
+            return StandardResponse.bad_request("symbol required")
+        if quantity <= 0:
+            logger.error(f"Add holding failed: invalid quantity {quantity}")
+            return StandardResponse.bad_request("quantity must be positive")
+        if average_price <= 0:
+            logger.error(f"Add holding failed: invalid averagePrice {average_price}")
+            return StandardResponse.bad_request("averagePrice must be positive")
+        
+        logger.info(f"Adding holding: user={user_id} symbol={symbol} qty={quantity} avgPrice={average_price}")
         result = add_holding(
             clerk_user_id=user_id,
-            symbol=payload.get("symbol", "").upper(),
-            company_name=payload.get("companyName", payload.get("symbol", "")),
+            symbol=symbol,
+            company_name=payload.get("companyName", symbol),
             exchange=payload.get("exchange", "NSE"),
-            quantity=float(payload.get("quantity", 0)),
-            average_price=float(payload.get("averagePrice", 0)),
+            quantity=quantity,
+            average_price=average_price,
         )
         result["id"] = str(result["id"])
         result["portfolio_id"] = str(result["portfolio_id"])
+        logger.info(f"Holding added successfully: id={result['id']} symbol={symbol}")
         return StandardResponse.success(result, "Holding added")
     except Exception as e:
-        logger.error(f"Add holding error: {e}")
+        logger.error(f"Add holding error: {e}", exc_info=True)
         return StandardResponse.server_error(str(e))
 
 

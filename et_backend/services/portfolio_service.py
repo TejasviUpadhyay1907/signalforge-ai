@@ -193,6 +193,8 @@ class PortfolioService:
         Raises:
             ValueError: If user not found or stock already exists
         """
+        import uuid
+        
         # Verify user exists
         user = db.query(User).filter(User.id == item_data.user_id).first()
         if not user:
@@ -207,13 +209,13 @@ class PortfolioService:
         if existing_item:
             raise ValueError(f"Stock {item_data.symbol} already exists in portfolio")
         
-        # Create new portfolio item
+        # Create new portfolio item with generated UUID
         portfolio_item = PortfolioItem(
+            id=str(uuid.uuid4()),
             user_id=item_data.user_id,
             symbol=item_data.symbol.upper(),
             quantity=item_data.quantity,
             avg_price=item_data.avg_price,
-            total_value=item_data.quantity * item_data.avg_price
         )
         
         db.add(portfolio_item)

@@ -100,10 +100,18 @@ export default function PortfolioPage() {
     }]);
     resetModal(); setShowModal(false);
     try {
-      await dbAddHolding({ userId: user.id, symbol: selectedStock.symbol, companyName: selectedStock.name,
-        exchange: selectedStock.exchange, quantity: parseFloat(qty), averagePrice: selectedStock.price || 1 });
-      // Refetch in background — optimistic entry stays until real data confirms
-      refetch();
+      const result = await dbAddHolding({ 
+        userId: user.id, 
+        symbol: selectedStock.symbol, 
+        companyName: selectedStock.name,
+        exchange: selectedStock.exchange, 
+        quantity: parseFloat(qty), 
+        averagePrice: selectedStock.price || 1 
+      });
+      console.log('Holding added successfully:', result);
+      // Wait a moment for DB commit, then refetch
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await refetch();
     } catch (e) {
       console.error('Add holding failed:', e);
       // Only remove optimistic entry if the INSERT itself failed
@@ -137,14 +145,19 @@ export default function PortfolioPage() {
 
   // ── Holdings — P&L computed from live prices ──────────────────────────────
   const dbHoldings = useMemo(() => (portfolioData?.holdings || []).map(h => {
-    // Priority: livePrices (15s poll) > h.currentPrice (from /api/portfolio) > h.averagePrice
+    // Priority: livePrices (15s poll) > h.currentPrice (from /api/portfolio) > h.averagePrice (fallback)
     const live = livePrices[h.symbol];
-    const price = (live?.price > 0)
-      ? live.price
-      : (h.currentPrice > 0 && h.currentPrice !== h.averagePrice)
-        ? h.currentPrice
-        : (h.currentPrice || 0);
     const avg = parseFloat(h.averagePrice || h.average_price || 0);
+    
+    // CRITICAL FIX: Always have a valid price, use avg as last resort
+    let price = avg; // Start with average as fallback
+    if (live?.price > 0) {
+      price = live.price; // Best: live WebSocket/polling price
+    } else if (h.currentPrice > 0) {
+      price = h.currentPrice; // Good: backend-fetched current price
+    }
+    // If still zero, keep avg as fallback so calculations don't break
+    
     const qty = parseFloat(h.quantity || 0);
     const cost = qty * avg;
     const currentValue = qty * price;
@@ -152,8 +165,8 @@ export default function PortfolioPage() {
     const pnlPct = cost > 0 ? (pnl / cost) * 100 : 0;
 
     // Debug: log when price equals avg (indicates stale data)
-    if (price === avg && avg > 0) {
-      console.warn(`[Portfolio] ${h.symbol}: currentPrice (${price}) === averagePrice (${avg}) — live price not yet loaded`);
+    if (price === avg && avg > 0 && !live?.price) {
+      console.warn(`[Portfolio] ${h.symbol}: using averagePrice as fallback (${price}) — live price not yet loaded`);
     }
 
     return {
@@ -260,9 +273,9 @@ export default function PortfolioPage() {
     ? `Updated ${Math.floor((Date.now() - scanLastUpdated) / 1000) < 10 ? 'just now' : `${Math.floor((Date.now() - scanLastUpdated) / 60000)}m ago`}`
     : 'Fetching...';
 
-  // Live status label
-  const liveStatus = wsConnected ? 'WebSocket Live' : pricesUpdatedAt ? 'Near-live' : 'Loading...';
-  const liveColor = wsConnected ? 'bg-signal-green' : pricesUpdatedAt ? 'bg-signal-amber' : 'bg-gold';
+  // Live status label - show "Ready" when portfolio is loaded but empty
+  const liveStatus = loading ? 'Loading...' : wsConnected ? 'WebSocket Live' : pricesUpdatedAt ? 'Near-live' : holdings.length > 0 ? 'Connecting...' : 'Ready';
+  const liveColor = loading ? 'bg-gold' : wsConnected ? 'bg-signal-green' : pricesUpdatedAt ? 'bg-signal-amber' : holdings.length > 0 ? 'bg-gold' : 'bg-gray-500';
 
   return (
     <DashboardLayout>

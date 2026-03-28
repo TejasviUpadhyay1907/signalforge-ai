@@ -6,6 +6,7 @@ This module provides standardized response formatting for all API endpoints.
 
 from typing import Any, Optional, Dict
 from fastapi import HTTPException
+from fastapi.responses import JSONResponse
 from datetime import datetime
 
 
@@ -44,28 +45,32 @@ class StandardResponse:
         }
     
     @staticmethod
-    def error(message: str, error_code: Optional[str] = None, details: Optional[str] = None) -> Dict[str, Any]:
+    def error(message: str, error_code: Optional[str] = None, details: Optional[str] = None, status_code: int = 500) -> JSONResponse:
         """
-        Create an error response.
+        Create an error response with proper HTTP status code.
         
         Args:
             message: Error message
             error_code: Optional error code
             details: Optional error details
+            status_code: HTTP status code (default 500)
             
         Returns:
-            Standardized error response
+            JSONResponse with error and proper status code
         """
-        return {
-            "success": False,
-            "data": None,
-            "message": message,
-            "error": {
-                "code": error_code,
-                "details": details
-            },
-            "timestamp": datetime.utcnow().isoformat()
-        }
+        return JSONResponse(
+            status_code=status_code,
+            content={
+                "success": False,
+                "data": None,
+                "message": message,
+                "error": {
+                    "code": error_code,
+                    "details": details
+                },
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        )
     
     @staticmethod
     def created(data: Any, message: str = "Resource created successfully") -> Dict[str, Any]:
@@ -109,81 +114,85 @@ class StandardResponse:
         return StandardResponse.success(None, message)
     
     @staticmethod
-    def not_found(resource: str) -> Dict[str, Any]:
+    def not_found(resource: str) -> JSONResponse:
         """
-        Create a not found response.
+        Create a not found response with 404 status.
         
         Args:
             resource: Resource name that was not found
             
         Returns:
-            Standardized not found response
+            JSONResponse with 404 status
         """
         return StandardResponse.error(
             message=f"{resource} not found",
-            error_code="NOT_FOUND"
+            error_code="NOT_FOUND",
+            status_code=404
         )
     
     @staticmethod
-    def bad_request(message: str, error_code: str = "BAD_REQUEST") -> Dict[str, Any]:
+    def bad_request(message: str, error_code: str = "BAD_REQUEST") -> JSONResponse:
         """
-        Create a bad request response.
+        Create a bad request response with 400 status.
         
         Args:
             message: Error message
             error_code: Error code
             
         Returns:
-            Standardized bad request response
+            JSONResponse with 400 status
         """
-        return StandardResponse.error(message, error_code)
+        return StandardResponse.error(message, error_code, status_code=400)
     
     @staticmethod
-    def server_error(message: str = "Internal server error") -> Dict[str, Any]:
+    def server_error(message: str = "Internal server error") -> JSONResponse:
         """
-        Create a server error response.
+        Create a server error response with 500 status.
         
         Args:
             message: Error message
             
         Returns:
-            Standardized server error response
+            JSONResponse with 500 status
         """
         return StandardResponse.error(
             message=message,
-            error_code="INTERNAL_SERVER_ERROR"
+            error_code="INTERNAL_SERVER_ERROR",
+            status_code=500
         )
     
     @staticmethod
-    def unauthorized(message: str = "Unauthorized") -> Dict[str, Any]:
+    def unauthorized(message: str = "Unauthorized") -> JSONResponse:
         """
-        Create an unauthorized response.
+        Create an unauthorized response with 401 status.
         
         Args:
             message: Error message
             
         Returns:
-            Standardized unauthorized response
+            JSONResponse with 401 status
         """
         return StandardResponse.error(
             message=message,
-            error_code="UNAUTHORIZED"
+            error_code="UNAUTHORIZED",
+            status_code=401
         )
     
     @staticmethod
-    def forbidden(message: str = "Forbidden") -> Dict[str, Any]:
+    def forbidden(message: str = "Forbidden") -> JSONResponse:
         """
-        Create a forbidden response.
+        Create a forbidden response with 403 status.
         
         Args:
             message: Error message
             
         Returns:
-            Standardized forbidden response
+            JSONResponse with 403 status
         """
         return StandardResponse.error(
             message=message,
-            error_code="FORBIDDEN"
+            error_code="FORBIDDEN",
+            status_code=403
         )
 
 

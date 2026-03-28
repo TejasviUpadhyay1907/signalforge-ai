@@ -87,7 +87,8 @@ async def add_portfolio_item(
     """
     try:
         # Use service layer
-        portfolio_item = PortfolioService.add_portfolio_item(db, item)
+        portfolio_service = PortfolioService()
+        portfolio_item = portfolio_service.add_portfolio_item(db, item)
         
         item_response = PortfolioItemResponse(
             id=portfolio_item.id,
@@ -131,7 +132,8 @@ async def remove_portfolio_item(
     """
     try:
         # Use service layer
-        removed = PortfolioService.remove_portfolio_item(db, item.user_id, item.symbol)
+        portfolio_service = PortfolioService()
+        removed = portfolio_service.remove_portfolio_item(db, item.user_id, item.symbol)
         
         if not removed:
             return StandardResponse.not_found(f"Stock {item.symbol} in portfolio")
@@ -165,7 +167,8 @@ async def get_portfolio_value(
     """
     try:
         # Use service layer
-        value_data = PortfolioService.calculate_portfolio_value(db, user_id)
+        portfolio_service = PortfolioService()
+        value_data = portfolio_service.calculate_portfolio_value(db, user_id)
         
         return StandardResponse.success({
             "user_id": value_data['user_id'],
@@ -197,7 +200,8 @@ async def get_portfolio_summary(
     """
     try:
         # Use service layer
-        summary = PortfolioService.get_portfolio_summary(db, user_id)
+        portfolio_service = PortfolioService()
+        summary = portfolio_service.get_portfolio_summary(db, user_id)
         
         return StandardResponse.success(summary, f"Portfolio summary generated for user {user_id}")
         

@@ -39,7 +39,8 @@ export function useApi(fetchFn, fallback = null, deps = [], pollInterval = 0) {
         }
       }
     } finally {
-      if (mountedRef.current && !isPolling) setLoading(false);
+      // CRITICAL FIX: Always set loading to false, even on error
+      if (mountedRef.current) setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);

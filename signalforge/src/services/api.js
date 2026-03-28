@@ -19,7 +19,14 @@ async function apiFetch(path, options = {}) {
       const err = await res.json().catch(() => ({ message: res.statusText }));
       throw new Error(err.message || `API error ${res.status}`);
     }
-    return res.json();
+    const json = await res.json();
+    // CRITICAL FIX: Check if response has success=false (StandardResponse error format)
+    if (json.success === false) {
+      const errorMsg = json.error?.details || json.message || 'Unknown error';
+      console.error('[API Error]', path, errorMsg, json);
+      throw new Error(errorMsg);
+    }
+    return json;
   } catch (err) {
     // In production with no backend, fail silently so UI still renders
     if (err.message === 'Failed to fetch' || err.name === 'TypeError') {

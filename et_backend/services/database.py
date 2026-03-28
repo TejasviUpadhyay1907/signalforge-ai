@@ -7,6 +7,7 @@ import os
 import logging
 import psycopg2
 import psycopg2.extras
+import psycopg2.pool
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from contextlib import contextmanager
@@ -14,26 +15,58 @@ from contextlib import contextmanager
 logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
-# Remove duplicate sqlite:// prefix if present (env has two DATABASE_URL lines)
-if "postgresql" in DATABASE_URL:
-    pass  # use as-is
-elif "sqlite" in DATABASE_URL:
-    DATABASE_URL = ""  # force failure so we know
+
+# Validate DATABASE_URL on module load
+if not DATABASE_URL:
+    logger.error("CRITICAL: DATABASE_URL environment variable is not set!")
+elif "postgresql" not in DATABASE_URL:
+    logger.error(f"CRITICAL: DATABASE_URL must be PostgreSQL, got: {DATABASE_URL[:30]}...")
+else:
+    logger.info(f"Database configured: {DATABASE_URL.split('@')[-1] if '@' in DATABASE_URL else 'localhost'}")
+
+# Connection pool for better performance and reliability
+_connection_pool = None
+
+def get_pool():
+    """Get or create connection pool."""
+    global _connection_pool
+    if _connection_pool is None:
+        try:
+            _connection_pool = psycopg2.pool.SimpleConnectionPool(
+                minconn=1,
+                maxconn=10,
+                dsn=DATABASE_URL
+            )
+            logger.info("Database connection pool created successfully")
+        except Exception as e:
+            logger.error(f"Failed to create connection pool: {e}")
+            raise
+    return _connection_pool
 
 
 @contextmanager
 def get_conn():
-    """Context manager for database connections."""
-    conn = psycopg2.connect(DATABASE_URL)
-    conn.autocommit = False
+    """Context manager for database connections using connection pool."""
+    if not DATABASE_URL:
+        raise ValueError("DATABASE_URL environment variable is not set")
+    if "postgresql" not in DATABASE_URL:
+        raise ValueError(f"Invalid DATABASE_URL: must be PostgreSQL connection string")
+    
+    pool = get_pool()
+    conn = None
     try:
+        conn = pool.getconn()
+        conn.autocommit = False
         yield conn
         conn.commit()
-    except Exception:
-        conn.rollback()
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        logger.error(f"Database transaction failed: {e}")
         raise
     finally:
-        conn.close()
+        if conn:
+            pool.putconn(conn)
 
 
 def _row_to_dict(cursor, row) -> Dict:
@@ -79,6 +112,8 @@ def get_holdings(clerk_user_id: str) -> List[Dict]:
 def add_holding(clerk_user_id: str, symbol: str, company_name: str, exchange: str,
                 quantity: float, average_price: float) -> Dict:
     """Add or update a holding (upsert by symbol). Single transaction."""
+    logger.info(f"add_holding called: user={clerk_user_id} symbol={symbol} qty={quantity} avgPrice={average_price}")
+    
     with get_conn() as conn:
         cur = conn.cursor()
 
@@ -87,14 +122,17 @@ def add_holding(clerk_user_id: str, symbol: str, company_name: str, exchange: st
         row = cur.fetchone()
         if row:
             portfolio_id = row[0]
+            logger.info(f"Found existing portfolio: id={portfolio_id} for user={clerk_user_id}")
         else:
             cur.execute(
                 "INSERT INTO portfolios (clerk_user_id, name) VALUES (%s, 'My Portfolio') RETURNING id",
                 (clerk_user_id,)
             )
             portfolio_id = cur.fetchone()[0]
+            logger.info(f"Created new portfolio: id={portfolio_id} for user={clerk_user_id}")
 
         # Upsert holding — all in same connection/transaction
+        logger.info(f"Upserting holding: portfolio={portfolio_id} symbol={symbol}")
         cur.execute("""
             INSERT INTO portfolio_holdings
                 (portfolio_id, clerk_user_id, symbol, company_name, exchange, quantity, average_price)
@@ -111,7 +149,7 @@ def add_holding(clerk_user_id: str, symbol: str, company_name: str, exchange: st
             RETURNING *
         """, (portfolio_id, clerk_user_id, symbol.upper(), company_name, exchange, quantity, average_price))
         result = _row_to_dict(cur, cur.fetchone())
-        logger.info(f"Holding saved: user={clerk_user_id} symbol={symbol.upper()} qty={quantity} portfolio={portfolio_id}")
+        logger.info(f"Holding saved successfully: user={clerk_user_id} symbol={symbol.upper()} qty={quantity} portfolio={portfolio_id} holding_id={result['id']}")
         return result
 
 
