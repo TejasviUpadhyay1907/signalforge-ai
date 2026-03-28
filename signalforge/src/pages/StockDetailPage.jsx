@@ -306,7 +306,6 @@ function computeRiskReward(price, signal, ohlcCloses, confidence) {
 
 export default function StockDetailPage() {
   const { symbol } = useParams();
-  const mockData = getMockStockDetail(symbol);
   const { user } = useUser();
   const [alertState, setAlertState] = useState('idle');
 
