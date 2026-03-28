@@ -324,11 +324,12 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-300 leading-relaxed pl-3.5 border-l-2 border-gold">{topPick.insight}</p>
               </div>
 
-              {/* Active Signals */}
+              {/* Active Signals - Enhanced AI Trading Experience */}
               <div>
-                <div className="flex justify-between items-center mb-3">
+                {/* Header with context */}
+                <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">Top AI Signals</span>
+                    <h3 className="text-[13px] font-semibold text-white tracking-tight">Top AI Signals</h3>
                     {/* Info tooltip */}
                     <div className="group/info relative">
                       <svg 
@@ -344,23 +345,28 @@ export default function DashboardPage() {
                         <path d="M12 16v-4" />
                         <path d="M12 8h.01" />
                       </svg>
-                      {/* Tooltip */}
-                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 opacity-0 pointer-events-none group-hover/info:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap">
-                        <div className="px-3 py-2 rounded-lg bg-[#0f0f13] border border-white/[0.15] shadow-[0_8px_24px_rgba(0,0,0,0.6)] text-[11px] text-gray-300">
-                          Highest-confidence signals selected by AI
+                      {/* Enhanced Tooltip */}
+                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 opacity-0 pointer-events-none group-hover/info:opacity-100 transition-opacity duration-200 z-50">
+                        <div className="px-3 py-2 rounded-lg bg-[#0f0f13] border border-white/[0.15] shadow-[0_8px_24px_rgba(0,0,0,0.6)] whitespace-nowrap">
+                          <div className="text-[11px] font-semibold text-white mb-1">AI Signal Ranking</div>
+                          <div className="text-[10px] text-gray-400 leading-relaxed">
+                            Ranked by confidence, momentum,<br />and technical signal strength
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Filter buttons */}
                   <div className="flex gap-1">
                     {['All', 'Buy', 'Sell'].map((filter) => (
                       <button
                         key={filter}
                         onClick={() => setSignalFilter(filter)}
-                        className={`px-2 py-1 rounded text-[11px] cursor-pointer transition-all ${
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium cursor-pointer transition-all ${
                           signalFilter === filter
-                            ? 'bg-white/10 text-white'
-                            : 'text-gray-500 hover:bg-white/5'
+                            ? 'bg-white/10 text-white shadow-sm'
+                            : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
                         }`}
                       >
                         {filter}
@@ -369,61 +375,84 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 
-                {/* Subtitle with count */}
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] text-gray-600">
-                    {showAllSignals 
-                      ? `Showing all ${totalFilteredCount} ${signalFilter.toLowerCase()} signal${totalFilteredCount !== 1 ? 's' : ''}`
-                      : `Showing top ${Math.min(5, totalFilteredCount)} of ${totalFilteredCount} ${signalFilter.toLowerCase()} signal${totalFilteredCount !== 1 ? 's' : ''}`
-                    }
-                  </span>
+                {/* Subtitle with intelligent context */}
+                <div className="flex items-center justify-between mb-3 px-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-500">
+                      {showAllSignals 
+                        ? `Viewing all ${totalFilteredCount} ${signalFilter === 'All' ? '' : signalFilter.toLowerCase()} signal${totalFilteredCount !== 1 ? 's' : ''}`
+                        : `Top ${Math.min(5, totalFilteredCount)} of ${totalFilteredCount} ${signalFilter === 'All' ? 'AI-ranked' : signalFilter.toLowerCase()} signal${totalFilteredCount !== 1 ? 's' : ''}`
+                      }
+                    </span>
+                    {!showAllSignals && totalFilteredCount > 5 && (
+                      <span className="text-[9px] text-gray-600">• Sorted by confidence</span>
+                    )}
+                  </div>
+                  
+                  {/* View All toggle - only show if more than 5 signals */}
                   {totalFilteredCount > 5 && (
                     <button
                       onClick={() => setShowAllSignals(!showAllSignals)}
-                      className="text-[10px] text-gold hover:text-gold/80 font-medium transition-colors flex items-center gap-1"
+                      className="group flex items-center gap-1.5 text-[11px] font-medium text-gold hover:text-gold/80 transition-colors"
                     >
-                      {showAllSignals ? (
-                        <>
-                          <span>Show Less</span>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="m18 15-6-6-6 6" />
-                          </svg>
-                        </>
-                      ) : (
-                        <>
-                          <span>View All</span>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="m6 9 6 6 6-6" />
-                          </svg>
-                        </>
-                      )}
+                      <span>{showAllSignals ? 'Show Top 5' : 'View All'}</span>
+                      <svg 
+                        width="14" 
+                        height="14" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2"
+                        className={`transition-transform duration-200 ${showAllSignals ? 'rotate-180' : ''}`}
+                      >
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
                     </button>
                   )}
                 </div>
                 
-                <div className="space-y-2">
+                {/* Signal list */}
+                <div className={`space-y-2 ${showAllSignals ? 'max-h-[600px] overflow-y-auto pr-1' : ''}`}>
                   {activeSignals.length > 0 ? (
-                    activeSignals.map(s => (
-                      <Link key={s.symbol} to={`/stock/${s.symbol}`}
-                        className="glass-card rounded-xl p-3 flex items-center gap-4 cursor-pointer hover:translate-x-0.5 transition-all group">
+                    activeSignals.map((s, idx) => (
+                      <Link 
+                        key={s.symbol} 
+                        to={`/stock/${s.symbol}`}
+                        className="glass-card rounded-xl p-3 flex items-center gap-4 cursor-pointer hover:translate-x-0.5 transition-all group relative"
+                      >
+                        {/* Rank indicator for top signals */}
+                        {!showAllSignals && idx < 3 && (
+                          <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-gradient-to-b from-gold via-gold to-gold/40" />
+                        )}
+                        
                         <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-semibold text-sm ${
                           s.signal === 'Buy' || s.signal === 'Strong Buy' || s.signal === 'Breakout' || s.signal === 'Momentum' ? 'bg-signal-greenLight text-signal-green' :
                           s.signal === 'Sell' || s.signal === 'Risky' ? 'bg-signal-redLight text-signal-red' : 'bg-white/5 text-white'
                         }`}>{s.logo}</div>
+                        
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold text-sm">{s.name.split(' ')[0]}</div>
-                          <div className="text-[11px] text-gray-500">{s.symbol} <span className={s.change >= 0 ? 'text-signal-green' : 'text-signal-red'}>
-                            {s.change >= 0 ? '↑' : '↓'} {s.change >= 0 ? '+' : ''}{s.change}%
-                          </span></div>
+                          <div className="text-[11px] text-gray-500">
+                            {s.symbol} 
+                            <span className={s.change >= 0 ? 'text-signal-green' : 'text-signal-red'}>
+                              {' '}{s.change >= 0 ? '↑' : '↓'} {s.change >= 0 ? '+' : ''}{s.change}%
+                            </span>
+                          </div>
                         </div>
+                        
                         <MiniSparkline trend={s.change >= 0 ? 'up' : 'down'} />
                         <SignalBadge signal={s.signal} />
-                        <span className="text-[11px] text-gray-500 font-medium w-8 text-right">{s.confidence}%</span>
-                        <button className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
-                          s.signal === 'Buy' || s.signal === 'Strong Buy' || s.signal === 'Breakout' || s.signal === 'Momentum' ? 'bg-gold/10 text-gold hover:bg-gold/20' : 'bg-white/5 text-gray-400 hover:bg-white/10'
-                        }`}>
-                          {s.signal === 'Sell' || s.signal === 'Risky' ? 'Monitor' : 'Review'}
-                        </button>
+                        
+                        <div className="flex items-center gap-3">
+                          <span className="text-[11px] text-gray-500 font-medium w-8 text-right">{s.confidence}%</span>
+                          <button className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
+                            s.signal === 'Buy' || s.signal === 'Strong Buy' || s.signal === 'Breakout' || s.signal === 'Momentum' 
+                              ? 'bg-gold/10 text-gold hover:bg-gold/20' 
+                              : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                          }`}>
+                            {s.signal === 'Sell' || s.signal === 'Risky' ? 'Monitor' : 'Review'}
+                          </button>
+                        </div>
                       </Link>
                     ))
                   ) : (
