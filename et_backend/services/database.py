@@ -216,6 +216,13 @@ def create_alert(clerk_user_id: str, data: Dict) -> Dict:
             "UPDATE trade_alerts SET status = 'replaced', updated_at = NOW() WHERE clerk_user_id = %s AND symbol = %s AND status = 'active'",
             (clerk_user_id, data["symbol"].upper())
         )
+        
+        # CRITICAL FIX: Use actual confidence from data, no default fallback
+        # The confidence should come from the stock analysis, not a hardcoded default
+        signal_confidence = data.get("signalConfidence")
+        if signal_confidence is None:
+            raise ValueError("signalConfidence is required for alert creation")
+        
         cur.execute("""
             INSERT INTO trade_alerts (clerk_user_id, symbol, company_name, action, entry_min, entry_max, stop_loss, target_price, signal_confidence)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -223,7 +230,7 @@ def create_alert(clerk_user_id: str, data: Dict) -> Dict:
         """, (
             clerk_user_id, data["symbol"].upper(), data.get("companyName", data["symbol"]),
             data.get("action"), data.get("entryMin"), data.get("entryMax"),
-            data.get("stopLoss"), data.get("targetPrice"), data.get("signalConfidence", 50)
+            data.get("stopLoss"), data.get("targetPrice"), signal_confidence
         ))
         return _row_to_dict(cur, cur.fetchone())
 

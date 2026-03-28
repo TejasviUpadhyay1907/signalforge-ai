@@ -665,8 +665,13 @@ async def create_trade_alert(payload: dict):
         # Validate required fields
         entry_min = payload.get("entryMin")
         stop_loss = payload.get("stopLoss")
+        signal_confidence = payload.get("signalConfidence")
+        
         if entry_min is None or stop_loss is None:
             return StandardResponse.bad_request("entryMin and stopLoss are required")
+        
+        if signal_confidence is None:
+            return StandardResponse.bad_request("signalConfidence is required")
 
         # Prevent duplicate active alerts for same user+symbol
         existing = [a for a in _trade_alerts if a["symbol"] == symbol and a["userId"] == user_id and a["status"] == "active"]
@@ -684,7 +689,7 @@ async def create_trade_alert(payload: dict):
             "entryMax": payload.get("entryMax", entry_min),
             "stopLoss": stop_loss,
             "targetPrice": payload.get("targetPrice"),
-            "signalConfidence": payload.get("signalConfidence", 50),
+            "signalConfidence": signal_confidence,
             "userId": user_id,
             "status": "active",
             "createdAt": datetime.now().isoformat(),
