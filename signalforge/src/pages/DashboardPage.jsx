@@ -410,36 +410,36 @@ export default function DashboardPage() {
                   <div className="bg-white/[0.03] rounded-lg p-3 border border-white/5">
                     <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-3">Buy vs Sell</div>
                     
-                    {/* Bar Chart Visualization */}
-                    <div className="flex items-end gap-2 h-16 mb-3">
+                    {/* Compact 3-column metric layout */}
+                    <div className="space-y-3">
                       {[
                         { h: analytics.buyVsSell.bull, color: 'bg-signal-green', label: 'Buy', pct: analytics.buyVsSell.bull, count: analytics.counts.buy },
                         { h: analytics.buyVsSell.bear, color: 'bg-signal-red', label: 'Sell', pct: analytics.buyVsSell.bear, count: analytics.counts.sell },
                         { h: analytics.buyVsSell.mixed, color: 'bg-gold', label: 'Hold', pct: analytics.buyVsSell.mixed, count: analytics.counts.hold },
                       ].map(b => (
-                        <div key={b.label} className="flex-1 flex flex-col items-center gap-1.5">
-                          {/* Count and percentage label above bar */}
-                          <div className="text-center">
-                            <div className="text-[11px] font-bold text-white">{b.count}</div>
-                            <div className="text-[9px] text-gray-400">{b.pct}%</div>
-                          </div>
+                        <div key={b.label} className="flex items-center gap-2">
+                          {/* Label */}
+                          <div className="w-10 text-[9px] text-gray-400 font-medium">{b.label}</div>
                           
-                          {/* Bar with minimum height for visibility */}
-                          <div className="w-full relative" style={{ height: '32px' }}>
+                          {/* Progress bar */}
+                          <div className="flex-1 h-2 bg-white/[0.03] rounded-full overflow-hidden">
                             <div 
-                              className={`absolute bottom-0 w-full ${b.color} rounded-t transition-all duration-500`} 
-                              style={{ height: `${Math.max(b.h, 8)}%` }}
+                              className={`h-full ${b.color} rounded-full transition-all duration-500`} 
+                              style={{ width: `${b.h}%` }}
                             />
                           </div>
                           
-                          {/* Label below bar */}
-                          <span className="text-[9px] text-gray-400 font-medium">{b.label}</span>
+                          {/* Count and percentage */}
+                          <div className="flex items-baseline gap-1 min-w-[40px] justify-end">
+                            <span className="text-[11px] font-bold text-white">{b.count}</span>
+                            <span className="text-[8px] text-gray-500">({b.pct}%)</span>
+                          </div>
                         </div>
                       ))}
                     </div>
                     
                     {/* Summary Stats */}
-                    <div className="pt-2 border-t border-white/5 flex justify-between text-[9px]">
+                    <div className="pt-3 mt-3 border-t border-white/5 flex justify-between text-[9px]">
                       <span className="text-gray-500">Total Signals</span>
                       <span className="text-white font-semibold">{analytics.counts.total}</span>
                     </div>
