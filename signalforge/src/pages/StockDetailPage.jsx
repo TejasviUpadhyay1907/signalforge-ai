@@ -5,7 +5,7 @@ import TopBar from '../components/TopBar';
 import SignalBadge from '../components/SignalBadge';
 import ConfidenceMeter from '../components/ConfidenceMeter';
 import { getStockDetail as getMockStockDetail } from '../data/mockData';
-import { getStockDetail as fetchStockDetail, getFinnhubQuote, dbCreateAlert, getCachedDetail } from '../services/api';
+import { getStockDetail as fetchStockDetail, getFinnhubQuote, dbCreateAlert, getCachedDetail, getUnifiedChart } from '../services/api';
 import { transformStockDetail } from '../services/transforms';
 import { fmtPrice, fmtChange, fmtPct } from '../utils/currency';
 import { useFinnhubWS } from '../hooks/useFinnhubWS';
@@ -115,6 +115,9 @@ export default function StockDetailPage() {
   const [liveData, setLiveData] = useState(() => getCachedDetail(symbol) || null);
   const [finnhubQuote, setFinnhubQuote] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(!getCachedDetail(symbol));
+  const [chartData, setChartData] = useState(null);
+  const [loadingChart, setLoadingChart] = useState(false);
+  const [tf, setTf] = useState('1M');
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -161,6 +164,36 @@ export default function StockDetailPage() {
     return () => clearInterval(pollId);
   }, [symbol]);
 
+  // Fetch chart data based on selected timeframe
+  useEffect(() => {
+    if (!symbol || !tf) return;
+
+    // Map timeframe buttons to API parameters
+    const timeframeMap = {
+      '1D': { period: '1d', interval: '5m' },
+      '1W': { period: '5d', interval: '1h' },
+      '1M': { period: '1mo', interval: '1d' },
+      '3M': { period: '3mo', interval: '1d' },
+      '1Y': { period: '1y', interval: '1wk' },
+    };
+
+    const params = timeframeMap[tf] || timeframeMap['1M'];
+    
+    setLoadingChart(true);
+    getUnifiedChart(symbol, params.period, params.interval)
+      .then(data => {
+        if (mountedRef.current && data) {
+          setChartData(data);
+        }
+      })
+      .catch(err => {
+        console.error('Chart fetch error:', err);
+      })
+      .finally(() => {
+        if (mountedRef.current) setLoadingChart(false);
+      });
+  }, [symbol, tf]);
+
   // Finnhub WebSocket for live price ticks
   const { livePrice: wsTick, connected: wsConnected } = useFinnhubWS(symbol);
 
@@ -187,8 +220,24 @@ export default function StockDetailPage() {
       result.change = wsTick.prevPrice ? round2(((wsTick.price - wsTick.prevPrice) / wsTick.prevPrice) * 100) : result.change;
     }
 
-    // Extend chart with live price point
-    if (result.price > 0 && result.chartData && result.chartData.length > 1) {
+    // Use dynamic chart data from API based on timeframe
+    if (chartData && chartData.timestamps && chartData.prices) {
+      // Transform API chart data to SVG coordinates
+      const prices = chartData.prices;
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      const priceRange = maxPrice - minPrice || 1;
+      
+      const chartPoints = prices.map((price, idx) => {
+        const x = (idx / (prices.length - 1 || 1)) * 800;
+        const normalizedPrice = (price - minPrice) / priceRange;
+        const y = 280 - (normalizedPrice * 260); // Invert Y and add padding
+        return { x, y, price };
+      });
+
+      result.chartData = chartPoints;
+    } else if (result.price > 0 && result.chartData && result.chartData.length > 1) {
+      // Fallback: Extend existing chart with live price point
       const pts = result.chartData;
       const lastPt = pts[pts.length - 1];
       const step = pts.length > 1 ? pts[1].x - pts[0].x : 40;
@@ -203,9 +252,7 @@ export default function StockDetailPage() {
     }
 
     return result;
-  }, [baseData, finnhubQuote, wsTick]);
-
-  const [tf, setTf] = useState('1M');
+  }, [baseData, finnhubQuote, wsTick, chartData]);
 
   // round2 must be defined BEFORE useMemo that uses it
   const round2 = (n) => Math.round(n * 100) / 100;
@@ -533,9 +580,16 @@ export default function StockDetailPage() {
                   </div>
                 </div>
                 <div className="relative w-full h-[300px] p-6">
-                  {loadingDetail && (
+                  {(loadingDetail || loadingChart) && (
                     <div className="absolute inset-0 flex flex-col gap-3 p-6 z-10">
-                      <div className="h-full rounded-xl bg-white/[0.03] animate-pulse" />
+                      <div className="h-full rounded-xl bg-white/[0.03] animate-pulse flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-2">
+                          <svg className="animate-spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                          </svg>
+                          <span className="text-xs text-gray-500">Loading {tf} chart...</span>
+                        </div>
+                      </div>
                     </div>
                   )}
                   <svg className="w-full h-full" viewBox={`0 0 ${Math.max(800, ...(d.chartData || []).map(p => p.x + 20))} 300`} preserveAspectRatio="none">
