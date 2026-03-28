@@ -12,6 +12,9 @@ import { transformScanStock } from '../services/transforms';
 export default function DashboardPage() {
   // Signal filter state
   const [signalFilter, setSignalFilter] = useState('All');
+  
+  // Market sentiment timeframe filter state
+  const [sentimentTimeframe, setSentimentTimeframe] = useState('1D');
 
   // Load scan data (signals + analysis) — refreshes every 5 min
   const { data: scanData } = useApi(
@@ -55,12 +58,106 @@ export default function DashboardPage() {
     rank: 1,
   } : mockTopPick;
 
-  // Right panel data — live or fallback to mock
-  const sentiment = overview?.marketSentiment || { score: dashboardMetrics.sentiment, label: dashboardMetrics.sentimentLabel, changeText: dashboardMetrics.techInflow + ' tech inflow' };
-  const topMovers = overview?.topMovers || dashboardMetrics.topMovers;
+  // Compute dynamic sentiment based on actual market data
+  const dynamicSentiment = useMemo(() => {
+    if (overview?.marketSentiment) return overview.marketSentiment;
+    
+    if (!stocks || stocks.length === 0) {
+      return { 
+        score: dashboardMetrics.sentiment, 
+        label: dashboardMetrics.sentimentLabel, 
+        changeText: dashboardMetrics.techInflow + ' tech inflow' 
+      };
+    }
+    
+    // Calculate sentiment from buy/sell ratio and average change
+    const buyCount = stocks.filter(s => {
+      const sig = (s.signal || '').toLowerCase();
+      return sig.includes('buy') || sig === 'breakout' || sig === 'momentum';
+    }).length;
+    
+    const avgChange = stocks.reduce((sum, s) => sum + (s.change || 0), 0) / stocks.length;
+    
+    // Sentiment score: 50% from buy ratio, 50% from avg change
+    const buyRatio = (buyCount / stocks.length) * 100;
+    const changeScore = 50 + (avgChange * 5); // Scale change to 0-100 range
+    const score = Math.round((buyRatio * 0.5) + (changeScore * 0.5));
+    
+    // Determine label
+    let label = 'Neutral';
+    if (score >= 70) label = 'Bullish';
+    else if (score >= 55) label = 'Slightly Bullish';
+    else if (score <= 30) label = 'Bearish';
+    else if (score <= 45) label = 'Slightly Bearish';
+    
+    // Change text based on avg movement
+    const changeText = avgChange >= 0 
+      ? `+${avgChange.toFixed(1)}% avg gain` 
+      : `${avgChange.toFixed(1)}% avg loss`;
+    
+    return { score, label, changeText };
+  }, [overview, stocks]);
+  
+  const sentiment = dynamicSentiment;
+  
+  // Compute top movers dynamically from stocks if not in overview
+  const topMovers = useMemo(() => {
+    if (overview?.topMovers) return overview.topMovers;
+    
+    if (!stocks || stocks.length === 0) return dashboardMetrics.topMovers;
+    
+    // Sort by absolute change percentage
+    const sorted = [...stocks]
+      .filter(s => s.change !== undefined && s.change !== null)
+      .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+      .slice(0, 5);
+    
+    return sorted.map(s => ({
+      symbol: s.symbol,
+      change: `${s.change >= 0 ? '+' : ''}${s.change.toFixed(2)}%`,
+      up: s.change >= 0
+    }));
+  }, [overview, stocks]);
+  
   const dataPoints = overview?.dataPoints || dashboardMetrics.dataPoints;
-  const chartLine = sentiment.chartLine || "M0,50 L40,45 L80,42 L120,38 L160,32 L200,28 L240,22 L280,18 L300,15";
-  const chartArea = sentiment.chartArea || (chartLine + " L300,70 L0,70 Z");
+  
+  // Generate dynamic sentiment chart based on timeframe and current stocks
+  const sentimentChart = useMemo(() => {
+    if (!stocks || stocks.length === 0) {
+      return {
+        line: "M0,50 L40,45 L80,42 L120,38 L160,32 L200,28 L240,22 L280,18 L300,15",
+        area: "M0,50 L40,45 L80,42 L120,38 L160,32 L200,28 L240,22 L280,18 L300,15 L300,70 L0,70 Z"
+      };
+    }
+
+    // Generate chart points based on sentiment timeframe
+    const pointCount = sentimentTimeframe === '1D' ? 24 : sentimentTimeframe === '1W' ? 7 : 30;
+    const width = 300;
+    const height = 70;
+    const step = width / (pointCount - 1);
+    
+    // Simulate sentiment trend based on current market data
+    const avgChange = stocks.reduce((sum, s) => sum + (s.change || 0), 0) / stocks.length;
+    const baseY = 50 - (avgChange * 2); // Center around 50, scale by avg change
+    
+    const points = [];
+    for (let i = 0; i < pointCount; i++) {
+      const x = i * step;
+      // Add some variation to make it look realistic
+      const variation = Math.sin(i * 0.5) * 5 + Math.random() * 3;
+      const trend = (i / pointCount) * (sentiment.score > 50 ? -15 : 10); // Trend up if bullish
+      const y = Math.max(10, Math.min(60, baseY + variation + trend));
+      points.push({ x, y });
+    }
+    
+    const line = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+    const area = line + ` L${width},${height} L0,${height} Z`;
+    
+    return { line, area };
+  }, [stocks, sentimentTimeframe, sentiment.score]);
+
+  const chartLine = sentimentChart.line;
+  const chartArea = sentimentChart.area;
 
   // CRITICAL FIX: Compute analytics dynamically from actual stocks data
   const analytics = useMemo(() => {
@@ -281,8 +378,16 @@ export default function DashboardPage() {
                   </svg>
                 </div>
                 <div className="flex gap-2 mt-3">
-                  {['1D', '1W', '1M'].map((t, i) => (
-                    <span key={t} className={`px-2 py-1 rounded text-[11px] cursor-pointer ${i === 0 ? 'bg-white/10 text-white' : 'text-gray-500'}`}>{t}</span>
+                  {['1D', '1W', '1M'].map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setSentimentTimeframe(t)}
+                      className={`px-2 py-1 rounded text-[11px] cursor-pointer transition-all ${
+                        sentimentTimeframe === t ? 'bg-white/10 text-white' : 'text-gray-500 hover:bg-white/5'
+                      }`}
+                    >
+                      {t}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -311,17 +416,41 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-3 mt-2">
                       <svg width="50" height="50" viewBox="0 0 50 50">
                         <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
-                        <circle cx="25" cy="25" r="20" fill="none" stroke="#16A34A" strokeWidth="8" strokeDasharray="35 125" strokeDashoffset="-10" />
-                        <circle cx="25" cy="25" r="20" fill="none" stroke="#D4AF37" strokeWidth="8" strokeDasharray="25 125" strokeDashoffset="-55" />
-                        <circle cx="25" cy="25" r="20" fill="none" stroke="#3B82F6" strokeWidth="8" strokeDasharray="20 125" strokeDashoffset="-90" />
+                        {(() => {
+                          const sectors = Object.entries(analytics.sectors);
+                          const colors = ['#16A34A', '#D4AF37', '#3B82F6', '#EF4444', '#8B5CF6'];
+                          let offset = -10;
+                          return sectors.map(([sector, pct], idx) => {
+                            const circumference = 125;
+                            const dashLength = (pct / 100) * circumference;
+                            const circle = (
+                              <circle
+                                key={sector}
+                                cx="25"
+                                cy="25"
+                                r="20"
+                                fill="none"
+                                stroke={colors[idx % colors.length]}
+                                strokeWidth="8"
+                                strokeDasharray={`${dashLength} ${circumference}`}
+                                strokeDashoffset={offset}
+                              />
+                            );
+                            offset -= dashLength;
+                            return circle;
+                          });
+                        })()}
                       </svg>
                       <div className="text-[10px] space-y-0.5">
-                        {Object.entries(analytics.sectors).map(([k, v]) => (
-                          <div key={k} className="flex items-center gap-1">
-                            <span className={`w-1.5 h-1.5 rounded-sm ${k === 'Tech' ? 'bg-signal-green' : k === 'Finance' ? 'bg-gold' : k === 'Energy' ? 'bg-blue-500' : 'bg-gray-500'}`} />
-                            {k} {v}%
-                          </div>
-                        ))}
+                        {Object.entries(analytics.sectors).map(([k, v], idx) => {
+                          const colors = ['bg-signal-green', 'bg-gold', 'bg-blue-500', 'bg-red-500', 'bg-purple-500'];
+                          return (
+                            <div key={k} className="flex items-center gap-1">
+                              <span className={`w-1.5 h-1.5 rounded-sm ${colors[idx % colors.length]}`} />
+                              {k} {v}%
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
