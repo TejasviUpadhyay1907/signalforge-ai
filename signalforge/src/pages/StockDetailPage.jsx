@@ -851,10 +851,6 @@ export default function StockDetailPage() {
                   <span className={`${isBullish ? 'text-signal-green' : 'text-signal-red'} font-bold text-lg tracking-wide uppercase`}>{d.signal}</span>
                 </div>
               </div>
-              <div className="flex flex-col items-center justify-center bg-surface border border-surfaceBorder rounded-lg p-2 min-w-[100px]">
-                <span className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Confidence</span>
-                <ConfidenceMeter value={d.confidence} size="ring" />
-              </div>
             </div>
           </header>
 
@@ -928,25 +924,6 @@ export default function StockDetailPage() {
                     currentPrice={d.price}
                     symbol={symbol}
                   />
-                </div>
-              </div>
-
-              {/* Confidence Drivers */}
-              <div className={`glass-card rounded-2xl p-5 border border-${signalColor}-500/20 bg-gradient-to-r from-${signalColor}-500/5 to-transparent`}>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className={`text-sm font-semibold text-${signalColor}-400 flex items-center gap-2`}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 12l2 2 4-4" /><circle cx="12" cy="12" r="10" /></svg>
-                    Why this is High Confidence
-                  </h3>
-                  <span className={`px-2 py-0.5 rounded bg-${signalColor}-500/20 text-${signalColor}-400 text-xs font-medium`}>{d.confidence}% Match</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {d.confidenceDrivers?.map(driver => (
-                    <span key={driver} className={`px-3 py-1.5 rounded-full bg-surface border border-${signalColor}-500/30 text-xs text-gray-300 flex items-center gap-1.5`}>
-                      <span className={`w-1.5 h-1.5 rounded-full bg-${signalColor}-500 animate-pulse`} />
-                      {driver}
-                    </span>
-                  ))}
                 </div>
               </div>
 
@@ -1092,18 +1069,8 @@ export default function StockDetailPage() {
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-gray-500">Confidence</span>
-                      <span className="text-xs font-semibold text-white">{trendForecast.confidence}%</span>
-                    </div>
-                    <div className="h-2 bg-surface rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full transition-all duration-700 ${
-                          trendForecast.trend === 'Bullish' ? 'bg-gradient-to-r from-emerald-600 to-emerald-400' :
-                          trendForecast.trend === 'Bearish' ? 'bg-gradient-to-r from-red-600 to-red-400' :
-                          'bg-gradient-to-r from-amber-600 to-amber-400'
-                        }`}
-                        style={{ width: `${trendForecast.confidence}%` }}
-                      />
+                      <span className="text-xs text-gray-500">Trend Direction</span>
+                      <span className="text-xs font-semibold text-white">{trendForecast.trend}</span>
                     </div>
                   </div>
                 </div>
@@ -1190,7 +1157,7 @@ export default function StockDetailPage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-semibold text-gold">SignalForge AI Synthesis</h3>
-                      <span className="text-[10px] text-gray-500">{d.confidence}% confidence match</span>
+                      <span className="text-[10px] text-gray-500">AI-powered analysis</span>
                     </div>
                   </div>
                 </div>
@@ -1201,14 +1168,6 @@ export default function StockDetailPage() {
                 <div className="mb-4">
                   <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">What this means</h4>
                   <p className="text-sm text-gray-300 leading-relaxed">{d.aiExplanation}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {d.confidenceDrivers?.map(driver => (
-                    <span key={driver} className="px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-400 flex items-center gap-1">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12l5 5L20 7" /></svg>
-                      {driver}
-                    </span>
-                  ))}
                 </div>
               </div>
 

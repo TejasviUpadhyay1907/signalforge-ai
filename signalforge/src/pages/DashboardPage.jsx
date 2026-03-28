@@ -379,7 +379,7 @@ export default function DashboardPage() {
                         <div className="px-3 py-2 rounded-lg bg-[#0f0f13] border border-white/[0.15] shadow-[0_8px_24px_rgba(0,0,0,0.6)] whitespace-nowrap">
                           <div className="text-[11px] font-semibold text-white mb-1">AI Signal Ranking</div>
                           <div className="text-[10px] text-gray-400 leading-relaxed">
-                            Ranked by confidence, momentum,<br />and technical signal strength
+                            Ranked by momentum and<br />technical signal strength
                           </div>
                         </div>
                       </div>
@@ -414,7 +414,7 @@ export default function DashboardPage() {
                       }
                     </span>
                     {!showAllSignals && totalFilteredCount > 5 && (
-                      <span className="text-[9px] text-gray-600">• Sorted by confidence</span>
+                      <span className="text-[9px] text-gray-600">• Sorted by signal strength</span>
                     )}
                   </div>
                   
@@ -476,10 +476,6 @@ export default function DashboardPage() {
                         <SignalBadge signal={s.signal} />
                         
                         <div className="flex items-center gap-3">
-                          <div className="text-right">
-                            <div className="text-[10px] text-gray-600 uppercase tracking-wider font-semibold">Confidence</div>
-                            <div className="text-xs font-bold text-white">{s.confidence}%</div>
-                          </div>
                           <Link
                             to={`/stock/${s.symbol}`}
                             onMouseEnter={() => {

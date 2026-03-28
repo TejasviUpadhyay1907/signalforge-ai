@@ -249,22 +249,6 @@ export default function NotificationBell() {
                                 </div>
                               </div>
                             </div>
-                            
-                            {/* Row 3: Confidence */}
-                            {alert.signal_confidence && (
-                              <div className="flex items-center gap-2">
-                                <span className="text-[9px] text-gray-500 shrink-0">Confidence</span>
-                                <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                                  <div 
-                                    className="h-full bg-gradient-to-r from-gold to-gold/60 rounded-full transition-all duration-500"
-                                    style={{ width: `${alert.signal_confidence}%` }}
-                                  />
-                                </div>
-                                <span className="text-[9px] text-gray-400 font-bold shrink-0">
-                                  {alert.signal_confidence}%
-                                </span>
-                              </div>
-                            )}
                           </Link>
                         </div>
                         
