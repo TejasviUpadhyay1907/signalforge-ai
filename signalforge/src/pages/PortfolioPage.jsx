@@ -354,7 +354,7 @@ export default function PortfolioPage() {
     : 'Fetching...';
 
   // Live status label - show "Ready" when portfolio is loaded but empty
-  const liveStatus = loading ? 'Loading...' : wsConnected ? 'WebSocket Live' : pricesUpdatedAt ? 'Near-live' : holdings.length > 0 ? 'Connecting...' : 'Ready';
+  const liveStatus = loading ? 'Loading...' : wsConnected ? 'Live' : pricesUpdatedAt ? 'Near-live' : holdings.length > 0 ? 'Connecting...' : 'Ready';
   const liveColor = loading ? 'bg-gold' : wsConnected ? 'bg-signal-green' : pricesUpdatedAt ? 'bg-signal-amber' : holdings.length > 0 ? 'bg-gold' : 'bg-gray-500';
 
   return (
@@ -512,7 +512,7 @@ export default function PortfolioPage() {
                 <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${wsConnected ? 'bg-signal-green' : 'bg-signal-amber'}`} />
               </div>
               <div className="text-2xl font-light text-white tabular-nums">{fmtPrice(totalValue)}</div>
-              <div className="text-xs text-gray-500 mt-1">{wsConnected ? 'WebSocket live' : pricesUpdatedAt ? `Updated ${Math.floor((Date.now() - pricesUpdatedAt) / 1000)}s ago` : 'INR'}</div>
+              <div className="text-xs text-gray-500 mt-1">{wsConnected ? 'Live' : pricesUpdatedAt ? `Updated ${Math.floor((Date.now() - pricesUpdatedAt) / 1000)}s ago` : 'INR'}</div>
             </div>
 
             <div className="glass-card rounded-xl p-5 hover:-translate-y-0.5 transition-all">
