@@ -71,15 +71,18 @@ def get_holdings(clerk_user_id: str) -> List[Dict]:
             "SELECT * FROM portfolio_holdings WHERE clerk_user_id = %s ORDER BY created_at DESC",
             (clerk_user_id,)
         )
-        return _rows_to_dicts(cur, cur.fetchall())
+        rows = _rows_to_dicts(cur, cur.fetchall())
+        logger.info(f"get_holdings: user={clerk_user_id} found={len(rows)} holdings")
+        return rows
 
 
 def add_holding(clerk_user_id: str, symbol: str, company_name: str, exchange: str,
                 quantity: float, average_price: float) -> Dict:
-    """Add or update a holding (upsert by symbol). Minimises DB round-trips."""
+    """Add or update a holding (upsert by symbol). Single transaction."""
     with get_conn() as conn:
         cur = conn.cursor()
-        # Get or create portfolio — single query with upsert
+
+        # Get or create portfolio in same transaction
         cur.execute("SELECT id FROM portfolios WHERE clerk_user_id = %s LIMIT 1", (clerk_user_id,))
         row = cur.fetchone()
         if row:
@@ -91,20 +94,25 @@ def add_holding(clerk_user_id: str, symbol: str, company_name: str, exchange: st
             )
             portfolio_id = cur.fetchone()[0]
 
-        # Upsert holding
+        # Upsert holding — all in same connection/transaction
         cur.execute("""
-            INSERT INTO portfolio_holdings (portfolio_id, clerk_user_id, symbol, company_name, exchange, quantity, average_price)
+            INSERT INTO portfolio_holdings
+                (portfolio_id, clerk_user_id, symbol, company_name, exchange, quantity, average_price)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (portfolio_id, symbol)
             DO UPDATE SET
                 quantity = portfolio_holdings.quantity + EXCLUDED.quantity,
-                average_price = (portfolio_holdings.average_price * portfolio_holdings.quantity + EXCLUDED.average_price * EXCLUDED.quantity)
-                                / (portfolio_holdings.quantity + EXCLUDED.quantity),
+                average_price = (
+                    portfolio_holdings.average_price * portfolio_holdings.quantity
+                    + EXCLUDED.average_price * EXCLUDED.quantity
+                ) / (portfolio_holdings.quantity + EXCLUDED.quantity),
                 company_name = EXCLUDED.company_name,
                 updated_at = NOW()
             RETURNING *
         """, (portfolio_id, clerk_user_id, symbol.upper(), company_name, exchange, quantity, average_price))
-        return _row_to_dict(cur, cur.fetchone())
+        result = _row_to_dict(cur, cur.fetchone())
+        logger.info(f"Holding saved: user={clerk_user_id} symbol={symbol.upper()} qty={quantity} portfolio={portfolio_id}")
+        return result
 
 
 def update_holding(holding_id: str, clerk_user_id: str, quantity: float, average_price: float) -> Optional[Dict]:

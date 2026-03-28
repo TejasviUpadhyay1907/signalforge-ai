@@ -102,9 +102,11 @@ export default function PortfolioPage() {
     try {
       await dbAddHolding({ userId: user.id, symbol: selectedStock.symbol, companyName: selectedStock.name,
         exchange: selectedStock.exchange, quantity: parseFloat(qty), averagePrice: selectedStock.price || 1 });
+      // Refetch in background — optimistic entry stays until real data confirms
       refetch();
     } catch (e) {
       console.error('Add holding failed:', e);
+      // Only remove optimistic entry if the INSERT itself failed
       setOptimisticHoldings(prev => prev.filter(h => h.id !== optimisticId));
     } finally { setAddLoading(false); }
   };
@@ -117,7 +119,11 @@ export default function PortfolioPage() {
 
   useEffect(() => {
     if (portfolioData && !loading) {
-      setOptimisticHoldings([]);
+      // Only clear optimistic entries when real data confirms holdings exist
+      // or when the response explicitly says isEmpty (not on error/null)
+      if (portfolioData.holdings !== undefined) {
+        setOptimisticHoldings([]);
+      }
       if ((portfolioData.holdings || []).length > 0) setHadHoldings(true);
     }
   }, [portfolioData, loading]);

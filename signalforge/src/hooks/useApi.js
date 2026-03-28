@@ -26,12 +26,17 @@ export function useApi(fetchFn, fallback = null, deps = [], pollInterval = 0) {
       }
     } catch (err) {
       if (mountedRef.current) {
-        if (!isPolling) {
-          console.warn('[SignalForge API] Falling back to mock data:', err.message);
-          setData(fallback);
-          setUsingFallback(true);
-        }
+        // CRITICAL FIX: never wipe existing data on error — keep last known value
+        // Only use fallback if we have no data at all yet
+        setData(prev => {
+          if (prev === null || prev === undefined) return fallback;
+          return prev; // keep existing data on error
+        });
+        setUsingFallback(true);
         setError(err.message);
+        if (!isPolling) {
+          console.warn('[SignalForge API] Request failed, keeping last known data:', err.message);
+        }
       }
     } finally {
       if (mountedRef.current && !isPolling) setLoading(false);
@@ -43,7 +48,6 @@ export function useApi(fetchFn, fallback = null, deps = [], pollInterval = 0) {
     mountedRef.current = true;
     execute(false);
 
-    // Set up polling if interval > 0
     let intervalId;
     if (pollInterval > 0) {
       intervalId = setInterval(() => execute(true), pollInterval);
