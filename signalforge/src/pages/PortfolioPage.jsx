@@ -321,6 +321,64 @@ export default function PortfolioPage() {
     };
   }, [dbHoldings]);
 
+  // ── Portfolio Intelligence — Derived from real holdings ──────────────────
+  const portfolioInsights = useMemo(() => {
+    if (dbHoldings.length === 0) return null;
+
+    // Top Performer
+    const topPerformer = [...dbHoldings].sort((a, b) => b.pnlPct - a.pnlPct)[0];
+    
+    // Worst Performer
+    const worstPerformer = [...dbHoldings].sort((a, b) => a.pnlPct - b.pnlPct)[0];
+    
+    // Largest Holding by value
+    const largestHolding = [...dbHoldings].sort((a, b) => b.currentValue - a.currentValue)[0];
+    const largestHoldingPct = totalValue > 0 ? (largestHolding.currentValue / totalValue) * 100 : 0;
+    
+    // Signal Breakdown
+    const signalBreakdown = {
+      buy: dbHoldings.filter(h => h.signal === 'Buy').length,
+      hold: dbHoldings.filter(h => h.signal === 'Hold').length,
+      sell: dbHoldings.filter(h => h.signal === 'Sell').length,
+    };
+    
+    // Live Movers (biggest price changes today)
+    const liveMovers = [...dbHoldings]
+      .filter(h => Math.abs(h.change) > 0)
+      .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+      .slice(0, 3);
+    
+    // Portfolio AI Summary
+    const avgPnl = dbHoldings.reduce((sum, h) => sum + h.pnlPct, 0) / dbHoldings.length;
+    const positiveCount = dbHoldings.filter(h => h.pnl > 0).length;
+    const negativeCount = dbHoldings.filter(h => h.pnl < 0).length;
+    
+    let aiSummary = '';
+    if (totalPnlPct > 5) {
+      aiSummary = `Strong portfolio performance with ${fmtPct(totalPnlPct)} gains. ${positiveCount} of ${dbHoldings.length} holdings are profitable.`;
+    } else if (totalPnlPct > 0) {
+      aiSummary = `Portfolio showing modest gains at ${fmtPct(totalPnlPct)}. ${positiveCount} holdings in profit, ${negativeCount} need attention.`;
+    } else if (totalPnlPct > -5) {
+      aiSummary = `Portfolio slightly down ${fmtPct(Math.abs(totalPnlPct))}. ${negativeCount} holdings underperforming, consider rebalancing.`;
+    } else {
+      aiSummary = `Portfolio facing headwinds with ${fmtPct(Math.abs(totalPnlPct))} losses. ${negativeCount} of ${dbHoldings.length} holdings need review.`;
+    }
+    
+    // Concentration Risk
+    const concentrationRisk = largestHoldingPct > 40 ? 'High' : largestHoldingPct > 25 ? 'Medium' : 'Low';
+    
+    return {
+      topPerformer,
+      worstPerformer,
+      largestHolding,
+      largestHoldingPct,
+      signalBreakdown,
+      liveMovers,
+      aiSummary,
+      concentrationRisk,
+    };
+  }, [dbHoldings, totalValue, totalPnlPct]);
+
   // Flash on total P&L change
   const pnlFlash = useFlash(Math.round(totalPnl));
 
@@ -363,15 +421,32 @@ export default function PortfolioPage() {
       <main className="flex-1 overflow-y-auto p-6">
         <div className="max-w-[1400px] mx-auto space-y-6">
 
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <div className="text-sm text-white font-medium">SignalForge AI</div>
+          {/* Header - Premium Hero Section */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500/[0.08] via-transparent to-gold/[0.05] border border-white/[0.06] p-6">
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gold/[0.03] rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/[0.04] rounded-full blur-3xl" />
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/[0.08] border border-purple-500/15">
-                <div className={`w-2 h-2 rounded-full animate-pulse ${liveColor}`} />
-                <span className="text-xs text-purple-400 font-medium">{loading ? 'Loading...' : liveStatus}</span>
+            <div className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-8 h-8 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                      <line x1="12" y1="22.08" x2="12" y2="12" />
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gold font-semibold tracking-wide">SignalForge AI</span>
+                </div>
+                <h1 className="text-2xl font-bold text-white mb-1">Portfolio Intelligence</h1>
+                <p className="text-sm text-gray-400">Real-time insights powered by live market data</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/30 border border-white/[0.08] backdrop-blur-sm">
+                  <div className={`w-2 h-2 rounded-full animate-pulse ${liveColor}`} />
+                  <span className="text-xs text-white font-medium">{loading ? 'Loading...' : liveStatus}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -504,101 +579,227 @@ export default function PortfolioPage() {
 
           {/* ── Summary Cards ─────────────────────────────────────────────── */}
           {!isEmpty && (
+          <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="glass-card rounded-xl p-5 hover:-translate-y-0.5 transition-all">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="glass-card rounded-xl p-5 hover:-translate-y-0.5 transition-all duration-300 group">
+              <div className="flex items-center justify-between mb-3">
                 <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">Total Value</span>
-                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${wsConnected ? 'bg-signal-green' : 'bg-signal-amber'}`} />
+                <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="2">
+                    <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                </div>
               </div>
-              <div className="text-2xl font-light text-white tabular-nums">{fmtPrice(totalValue)}</div>
-              <div className="text-xs text-gray-500 mt-1">{wsConnected ? 'Live' : pricesUpdatedAt ? `Updated ${Math.floor((Date.now() - pricesUpdatedAt) / 1000)}s ago` : 'INR'}</div>
+              <div className="text-3xl font-bold text-white tabular-nums mb-1">{fmtPrice(totalValue)}</div>
+              <div className="flex items-center gap-2">
+                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${wsConnected ? 'bg-signal-green' : 'bg-signal-amber'}`} />
+                <span className="text-xs text-gray-400">{wsConnected ? 'Live' : pricesUpdatedAt ? `Updated ${Math.floor((Date.now() - pricesUpdatedAt) / 1000)}s ago` : 'INR'}</span>
+              </div>
             </div>
 
-            <div className="glass-card rounded-xl p-5 hover:-translate-y-0.5 transition-all">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="glass-card rounded-xl p-5 hover:-translate-y-0.5 transition-all duration-300 group">
+              <div className="flex items-center justify-between mb-3">
                 <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">P&L</span>
-                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${wsConnected ? 'bg-signal-green' : 'bg-signal-amber'}`} />
+                <div className={`w-8 h-8 rounded-lg ${totalPnl >= 0 ? 'bg-signal-green/10 border-signal-green/20' : 'bg-signal-red/10 border-signal-red/20'} border flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={totalPnl >= 0 ? '#10B981' : '#EF4444'} strokeWidth="2">
+                    {totalPnl >= 0 ? <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /> : <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />}
+                    {totalPnl >= 0 ? <polyline points="17 6 23 6 23 12" /> : <polyline points="17 18 23 18 23 12" />}
+                  </svg>
+                </div>
               </div>
-              <div className={`text-2xl font-light tabular-nums transition-all duration-300 ${
+              <div className={`text-3xl font-bold tabular-nums transition-all duration-300 mb-1 ${
                 pnlFlash === 'up' ? 'text-signal-green scale-105' :
                 pnlFlash === 'down' ? 'text-signal-red scale-105' :
                 totalPnl >= 0 ? 'text-signal-green' : 'text-signal-red'
               }`}>
                 {fmtPct(totalPnlPct)}
               </div>
-              <div className={`text-xs mt-1 ${totalPnl >= 0 ? 'text-signal-green' : 'text-signal-red'}`}>
-                {totalPnl >= 0 ? '+' : '-'}{fmtPrice(Math.abs(totalPnl))}
+              <div className={`text-xs ${totalPnl >= 0 ? 'text-signal-green' : 'text-signal-red'}`}>
+                {totalPnl >= 0 ? '+' : '-'}{fmtPrice(Math.abs(totalPnl))} unrealized
               </div>
             </div>
 
-            <div className="glass-card rounded-xl p-5 hover:-translate-y-0.5 transition-all">
-              <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium block mb-2">Health Score</span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-light text-white">{healthScore}</span>
-                <span className="text-xs text-gray-500">/ 100</span>
+            <div className="glass-card rounded-xl p-5 hover:-translate-y-0.5 transition-all duration-300 group">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">Health Score</span>
+                <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                  </svg>
+                </div>
               </div>
-              <div className="w-full h-1 bg-surfaceBorder rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-signal-green to-blue-500 rounded-full transition-all duration-1000" style={{ width: `${healthScore}%` }} />
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-3xl font-bold text-white">{healthScore}</span>
+                <span className="text-sm text-gray-500">/ 100</span>
+              </div>
+              <div className="w-full h-2 bg-surfaceBorder rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-signal-green via-blue-500 to-purple-500 rounded-full transition-all duration-1000" style={{ width: `${healthScore}%` }} />
               </div>
             </div>
 
-            <div className="glass-card rounded-xl p-5 hover:-translate-y-0.5 transition-all">
-              <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium block mb-2">Overall Risk</span>
-              <div className="mt-2">
-                <span className={`px-2 py-1 rounded text-xs font-medium ${riskLevel === 'Low' ? 'bg-signal-greenLight text-signal-green border border-signal-green/20' : riskLevel === 'Medium' ? 'bg-signal-amberLight text-signal-amber border border-signal-amber/20' : 'bg-signal-redLight text-signal-red border border-signal-red/20'}`}>{riskLevel} Exposure</span>
+            <div className="glass-card rounded-xl p-5 hover:-translate-y-0.5 transition-all duration-300 group">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">Overall Risk</span>
+                <div className={`w-8 h-8 rounded-lg ${riskLevel === 'Low' ? 'bg-signal-green/10 border-signal-green/20' : riskLevel === 'Medium' ? 'bg-signal-amber/10 border-signal-amber/20' : 'bg-signal-red/10 border-signal-red/20'} border flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={riskLevel === 'Low' ? '#10B981' : riskLevel === 'Medium' ? '#F59E0B' : '#EF4444'} strokeWidth="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                </div>
               </div>
-              <div className="text-xs text-gray-500 mt-2">{holdings.length} holdings tracked</div>
+              <div className="mb-2">
+                <span className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${riskLevel === 'Low' ? 'bg-signal-greenLight text-signal-green border border-signal-green/20' : riskLevel === 'Medium' ? 'bg-signal-amberLight text-signal-amber border border-signal-amber/20' : 'bg-signal-redLight text-signal-red border border-signal-red/20'}`}>{riskLevel} Exposure</span>
+              </div>
+              <div className="text-xs text-gray-400">{holdings.length} holdings tracked</div>
             </div>
           </div>
+
+          {/* ── AI Portfolio Insights ─────────────────────────────────────── */}
+          {portfolioInsights && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* AI Summary Card */}
+            <div className="glass-card rounded-xl p-5 lg:col-span-2 hover:-translate-y-0.5 transition-all duration-300">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-gold/20 border border-purple-500/30 flex items-center justify-center">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" />
+                  </svg>
+                </div>
+                <span className="text-sm font-semibold text-white">AI Portfolio Summary</span>
+              </div>
+              <p className="text-sm text-gray-300 leading-relaxed mb-4">{portfolioInsights.aiSummary}</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
+                  <div className="text-xs text-gray-500 mb-1">Signal Mix</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-signal-green text-lg font-bold">{portfolioInsights.signalBreakdown.buy}</span>
+                    <span className="text-signal-amber text-lg font-bold">{portfolioInsights.signalBreakdown.hold}</span>
+                    <span className="text-signal-red text-lg font-bold">{portfolioInsights.signalBreakdown.sell}</span>
+                  </div>
+                  <div className="text-[10px] text-gray-600 mt-1">Buy / Hold / Sell</div>
+                </div>
+                <div className="bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
+                  <div className="text-xs text-gray-500 mb-1">Concentration</div>
+                  <div className="text-lg font-bold text-white">{portfolioInsights.largestHoldingPct.toFixed(1)}%</div>
+                  <div className="text-[10px] text-gray-600 mt-1">{portfolioInsights.largestHolding.symbol}</div>
+                </div>
+                <div className="bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
+                  <div className="text-xs text-gray-500 mb-1">Risk Level</div>
+                  <div className={`text-lg font-bold ${portfolioInsights.concentrationRisk === 'Low' ? 'text-signal-green' : portfolioInsights.concentrationRisk === 'Medium' ? 'text-signal-amber' : 'text-signal-red'}`}>
+                    {portfolioInsights.concentrationRisk}
+                  </div>
+                  <div className="text-[10px] text-gray-600 mt-1">Concentration</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Top & Worst Performers */}
+            <div className="glass-card rounded-xl p-5 hover:-translate-y-0.5 transition-all duration-300">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-signal-green/20 to-signal-red/20 border border-signal-green/30 flex items-center justify-center">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2">
+                    <polyline points="18 15 12 9 6 15" />
+                  </svg>
+                </div>
+                <span className="text-sm font-semibold text-white">Performance Leaders</span>
+              </div>
+              
+              {/* Top Performer */}
+              <div className="bg-signal-green/[0.05] rounded-lg p-3 border border-signal-green/20 mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-signal-green font-medium">Top Performer</span>
+                  <span className="text-xs text-signal-green font-bold">+{portfolioInsights.topPerformer.pnlPct.toFixed(2)}%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-white">{portfolioInsights.topPerformer.symbol}</span>
+                  <span className="text-xs text-signal-green">+{fmtPrice(portfolioInsights.topPerformer.pnl)}</span>
+                </div>
+              </div>
+
+              {/* Worst Performer */}
+              <div className="bg-signal-red/[0.05] rounded-lg p-3 border border-signal-red/20">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-signal-red font-medium">Needs Attention</span>
+                  <span className="text-xs text-signal-red font-bold">{portfolioInsights.worstPerformer.pnlPct.toFixed(2)}%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-white">{portfolioInsights.worstPerformer.symbol}</span>
+                  <span className="text-xs text-signal-red">{fmtPrice(portfolioInsights.worstPerformer.pnl)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          )}
+          </>
           )}
 
           {/* ── Holdings Table ────────────────────────────────────────────── */}
           {!isEmpty && (
           <div className="glass-card rounded-xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-surfaceBorder flex justify-between items-center">
-              <span className="text-sm font-medium text-white">Active Holdings</span>
-              <button onClick={() => setShowModal(true)} className="text-xs px-3 py-1.5 rounded-lg bg-gold/10 text-gold border border-gold/20 hover:bg-gold/20 transition-colors">
-                + Add Stock
-              </button>
+            <div className="px-6 py-4 border-b border-surfaceBorder bg-gradient-to-r from-purple-500/[0.03] to-transparent">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-base font-semibold text-white mb-1">Active Holdings</h3>
+                  <p className="text-xs text-gray-400">{holdings.length} positions • Live tracking enabled</p>
+                </div>
+                <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gold/10 text-gold border border-gold/20 hover:bg-gold/20 transition-all hover:scale-105 active:scale-95">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  <span className="text-sm font-medium">Add Stock</span>
+                </button>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="text-[11px] uppercase tracking-wider text-gray-500 border-b border-surfaceBorder">
-                    <th className="px-5 py-3 font-normal">Asset</th>
-                    <th className="px-3 py-3 font-normal">Price</th>
-                    <th className="px-3 py-3 font-normal">Qty</th>
-                    <th className="px-3 py-3 font-normal">Avg Price</th>
-                    <th className="px-3 py-3 font-normal">P&L</th>
-                    <th className="px-3 py-3 font-normal">Signal</th>
-                    <th className="px-3 py-3 font-normal">Trend</th>
-                    <th className="px-3 py-3 font-normal text-right">Action</th>
+                  <tr className="text-[11px] uppercase tracking-wider text-gray-500 border-b border-surfaceBorder bg-white/[0.01]">
+                    <th className="px-6 py-3 font-semibold">Asset</th>
+                    <th className="px-3 py-3 font-semibold">Price</th>
+                    <th className="px-3 py-3 font-semibold">Qty</th>
+                    <th className="px-3 py-3 font-semibold">Avg Price</th>
+                    <th className="px-3 py-3 font-semibold">P&L</th>
+                    <th className="px-3 py-3 font-semibold">Signal</th>
+                    <th className="px-3 py-3 font-semibold">Trend</th>
+                    <th className="px-3 py-3 font-semibold text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {holdings.map(h => {
                     const priceFlash = h.price > h.prevPrice ? 'up' : h.price < h.prevPrice ? 'down' : null;
                     return (
-                    <tr key={h.id || h.symbol} className={`border-b border-surfaceBorder transition-all ${h._optimistic ? 'opacity-60 animate-pulse' : 'hover:bg-white/[0.02]'}`}>
-                      <td className="px-5 py-3">
-                        <span className="text-white font-medium">{h.name}</span>
-                        <span className="text-gray-500 text-[11px] ml-1.5">{h.symbol}</span>
+                    <tr key={h.id || h.symbol} className={`border-b border-surfaceBorder/50 transition-all ${h._optimistic ? 'opacity-60 animate-pulse' : 'hover:bg-white/[0.02]'}`}>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/10 to-gold/10 border border-white/[0.08] flex items-center justify-center">
+                            <span className="text-xs font-bold text-white">{h.symbol.slice(0, 2)}</span>
+                          </div>
+                          <div>
+                            <div className="text-white font-semibold text-sm">{h.name}</div>
+                            <div className="text-gray-500 text-[11px]">{h.symbol}</div>
+                          </div>
+                        </div>
                       </td>
-                      <td className={`px-3 py-3 font-mono text-xs transition-colors duration-300 ${priceFlash === 'up' ? 'text-signal-green' : priceFlash === 'down' ? 'text-signal-red' : 'text-white'}`}>
+                      <td className={`px-3 py-4 font-mono text-sm font-semibold transition-colors duration-300 ${priceFlash === 'up' ? 'text-signal-green' : priceFlash === 'down' ? 'text-signal-red' : 'text-white'}`}>
                         {fmtPrice(h.price)}
                       </td>
-                      <td className="px-3 py-3 text-xs text-gray-300">{h.shares}</td>
-                      <td className="px-3 py-3 font-mono text-xs text-gray-400">{fmtPrice(h.averagePrice)}</td>
-                      <td className="px-3 py-3 text-xs">
-                        <span className={h.pnl >= 0 ? 'text-signal-green' : 'text-signal-red'}>
-                          {h.pnl >= 0 ? '+' : '-'}{fmtPrice(Math.abs(h.pnl))} ({h.pnlPct >= 0 ? '+' : ''}{h.pnlPct?.toFixed(2)}%)
-                        </span>
+                      <td className="px-3 py-4 text-sm text-gray-300 font-medium">{h.shares}</td>
+                      <td className="px-3 py-4 font-mono text-sm text-gray-400">{fmtPrice(h.averagePrice)}</td>
+                      <td className="px-3 py-4 text-sm">
+                        <div className={`font-semibold ${h.pnl >= 0 ? 'text-signal-green' : 'text-signal-red'}`}>
+                          {h.pnl >= 0 ? '+' : '-'}{fmtPrice(Math.abs(h.pnl))}
+                        </div>
+                        <div className={`text-[11px] ${h.pnl >= 0 ? 'text-signal-green' : 'text-signal-red'}`}>
+                          {h.pnlPct >= 0 ? '+' : ''}{h.pnlPct?.toFixed(2)}%
+                        </div>
                       </td>
-                      <td className="px-3 py-3"><SignalBadge signal={h.signal} /></td>
-                      <td className="px-3 py-3"><MiniSparkline trend={h.change >= 0 ? 'up' : 'down'} /></td>
-                      <td className="px-3 py-3 text-right flex items-center gap-2 justify-end">
-                        <Link to={`/stock/${h.symbol}`} className="text-[11px] px-3 py-1.5 rounded-md bg-white/5 border border-surfaceBorder text-gray-400 hover:text-white hover:bg-white/10 transition-colors">Analyze</Link>
-                        <button onClick={() => removeHolding(h.id)} className="text-[11px] px-2 py-1.5 rounded-md bg-signal-redLight border border-signal-red/20 text-signal-red hover:bg-signal-red/20 transition-colors">×</button>
+                      <td className="px-3 py-4"><SignalBadge signal={h.signal} /></td>
+                      <td className="px-3 py-4"><MiniSparkline trend={h.change >= 0 ? 'up' : 'down'} /></td>
+                      <td className="px-3 py-4 text-right">
+                        <div className="flex items-center gap-2 justify-end">
+                          <Link to={`/stock/${h.symbol}`} className="text-[11px] px-3 py-1.5 rounded-md bg-white/5 border border-surfaceBorder text-gray-400 hover:text-white hover:bg-white/10 hover:border-gold/30 transition-all">Analyze</Link>
+                          <button onClick={() => removeHolding(h.id)} className="text-[11px] px-2 py-1.5 rounded-md bg-signal-redLight border border-signal-red/20 text-signal-red hover:bg-signal-red/20 transition-all">×</button>
+                        </div>
                       </td>
                     </tr>
                     );
@@ -611,17 +812,31 @@ export default function PortfolioPage() {
 
           {/* ── Risk Distribution ─────────────────────────────────────────── */}
           {!isEmpty && (
-          <div className="glass-card rounded-xl p-5">
-            <span className="text-sm font-medium text-white block mb-3">Risk Distribution</span>
-            <div className="space-y-3">
+          <div className="glass-card rounded-xl p-6 hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-signal-red/20 via-signal-amber/20 to-signal-green/20 border border-white/[0.1] flex items-center justify-center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-white">Risk Distribution</h3>
+                <p className="text-xs text-gray-400">Portfolio allocation by risk level</p>
+              </div>
+            </div>
+            <div className="space-y-4">
               {Object.entries(riskDistribution).map(([k, data]) => (
-                <div key={k}>
-                  <div className="flex justify-between text-[11px] text-gray-500 mb-1">
-                    <span className="capitalize">{k} Risk ({data.percent}%)</span>
-                    <span>{fmtPrice(data.value)}</span>
+                <div key={k} className="group">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded ${k === 'low' ? 'bg-signal-green' : k === 'medium' ? 'bg-signal-amber' : 'bg-signal-red'}`} />
+                      <span className="text-sm font-medium text-white capitalize">{k} Risk</span>
+                      <span className="text-xs text-gray-500">({data.percent}%)</span>
+                    </div>
+                    <span className="text-sm font-semibold text-white">{fmtPrice(data.value)}</span>
                   </div>
-                  <div className="w-full h-1 bg-surfaceBorder rounded-full">
-                    <div className={`h-full rounded-full transition-all duration-700 ${k === 'low' ? 'bg-signal-green' : k === 'medium' ? 'bg-signal-amber' : 'bg-signal-red'}`} style={{ width: `${data.percent}%` }} />
+                  <div className="w-full h-2.5 bg-surfaceBorder rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all duration-700 group-hover:scale-x-[1.02] origin-left ${k === 'low' ? 'bg-gradient-to-r from-signal-green to-signal-green/80' : k === 'medium' ? 'bg-gradient-to-r from-signal-amber to-signal-amber/80' : 'bg-gradient-to-r from-signal-red to-signal-red/80'}`} style={{ width: `${data.percent}%` }} />
                   </div>
                 </div>
               ))}
