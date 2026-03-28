@@ -337,6 +337,16 @@ export default function StockDetailPage() {
     if (cached) {
       setLiveData(cached);
       setLoadingDetail(false);
+      // OPTIMIZATION: Use OHLC data from cached detail for instant chart display
+      if (cached.ohlc && cached.ohlc.length > 0) {
+        const chartFromOhlc = {
+          ohlc: cached.ohlc,
+          prices: cached.ohlc.map(pt => pt.close),
+          timestamps: cached.ohlc.map(pt => pt.timestamp),
+        };
+        setChartData(chartFromOhlc);
+        chartCacheRef.current.set('1M', chartFromOhlc);
+      }
     } else {
       setLoadingDetail(true);
     }
@@ -359,21 +369,23 @@ export default function StockDetailPage() {
         if (mountedRef.current && detail) {
           setLiveData(detail);
           setLoadingDetail(false);
+          
+          // CRITICAL OPTIMIZATION: Use OHLC data from detail response for instant chart
+          // This eliminates the need for a separate chart API call on initial load
+          if (detail.ohlc && detail.ohlc.length > 0 && !chartCacheRef.current.has('1M')) {
+            const chartFromOhlc = {
+              ohlc: detail.ohlc,
+              prices: detail.ohlc.map(pt => pt.close),
+              timestamps: detail.ohlc.map(pt => pt.timestamp),
+            };
+            setChartData(chartFromOhlc);
+            chartCacheRef.current.set('1M', chartFromOhlc);
+          }
         }
       })
       .catch(() => {
         if (mountedRef.current) setLoadingDetail(false);
       });
-
-    // Fetch default chart (medium ~600ms) - update when ready
-    getUnifiedChart(symbol, '1mo', '1d')
-      .then(chart => {
-        if (mountedRef.current && chart) {
-          setChartData(chart);
-          chartCacheRef.current.set('1M', chart); // Cache default timeframe
-        }
-      })
-      .catch(() => {});
 
     // Poll quote every 15s for live updates
     const pollId = setInterval(() => {
@@ -394,6 +406,23 @@ export default function StockDetailPage() {
     if (cachedChart) {
       setChartData(cachedChart);
       setLoadingChart(false);
+      return;
+    }
+
+    // OPTIMIZATION: For 1M timeframe, wait for detail response (already has OHLC)
+    // Only fetch from chart API for other timeframes (1D, 1W, 3M, 1Y)
+    if (tf === '1M') {
+      // Chart will be set from detail response OHLC data
+      // If detail is already loaded, chart should already be set
+      if (liveData?.ohlc && liveData.ohlc.length > 0) {
+        const chartFromOhlc = {
+          ohlc: liveData.ohlc,
+          prices: liveData.ohlc.map(pt => pt.close),
+          timestamps: liveData.ohlc.map(pt => pt.timestamp),
+        };
+        setChartData(chartFromOhlc);
+        chartCacheRef.current.set('1M', chartFromOhlc);
+      }
       return;
     }
 
@@ -421,7 +450,7 @@ export default function StockDetailPage() {
         console.error('Chart fetch error:', err);
         if (mountedRef.current) setLoadingChart(false);
       });
-  }, [symbol, tf]);
+  }, [symbol, tf, liveData]);
 
   // Finnhub WebSocket for live price ticks
   const { livePrice: wsTick, connected: wsConnected } = useFinnhubWS(symbol);
