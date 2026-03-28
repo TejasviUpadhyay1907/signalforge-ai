@@ -359,3 +359,250 @@ body {
 .cl-backLink:hover {
   color: #D4AF37 !important;
 }
+
+/* ── Landing Page CTA Card Animations ── */
+
+/* Slow pulsing glow behind card */
+@keyframes pulse-slow {
+  0%, 100% { 
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% { 
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Even slower pulse for secondary glow */
+@keyframes pulse-slower {
+  0%, 100% { 
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% { 
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+.animate-pulse-slower {
+  animation: pulse-slower 6s ease-in-out infinite;
+}
+
+/* Floating background orbs */
+@keyframes float-slow {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  33% { 
+    transform: translate(-30px, -40px) scale(1.1);
+    opacity: 0.4;
+  }
+  66% { 
+    transform: translate(40px, 30px) scale(0.95);
+    opacity: 0.35;
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 20s ease-in-out infinite;
+}
+
+@keyframes float-slower {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1);
+    opacity: 0.25;
+  }
+  33% { 
+    transform: translate(35px, -35px) scale(1.05);
+    opacity: 0.35;
+  }
+  66% { 
+    transform: translate(-40px, 25px) scale(0.9);
+    opacity: 0.3;
+  }
+}
+
+.animate-float-slower {
+  animation: float-slower 25s ease-in-out infinite;
+}
+
+/* Floating AI particles - 6 different patterns */
+@keyframes float-particle-1 {
+  0%, 100% { 
+    transform: translate(0, 0);
+    opacity: 0.4;
+  }
+  25% { 
+    transform: translate(15px, -20px);
+    opacity: 0.7;
+  }
+  50% { 
+    transform: translate(-10px, -35px);
+    opacity: 0.5;
+  }
+  75% { 
+    transform: translate(-20px, -15px);
+    opacity: 0.6;
+  }
+}
+
+.animate-float-particle-1 {
+  animation: float-particle-1 12s ease-in-out infinite;
+}
+
+@keyframes float-particle-2 {
+  0%, 100% { 
+    transform: translate(0, 0);
+    opacity: 0.3;
+  }
+  33% { 
+    transform: translate(-18px, 25px);
+    opacity: 0.6;
+  }
+  66% { 
+    transform: translate(12px, 15px);
+    opacity: 0.5;
+  }
+}
+
+.animate-float-particle-2 {
+  animation: float-particle-2 15s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+@keyframes float-particle-3 {
+  0%, 100% { 
+    transform: translate(0, 0);
+    opacity: 0.35;
+  }
+  40% { 
+    transform: translate(20px, 30px);
+    opacity: 0.65;
+  }
+  80% { 
+    transform: translate(-15px, 20px);
+    opacity: 0.45;
+  }
+}
+
+.animate-float-particle-3 {
+  animation: float-particle-3 14s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+@keyframes float-particle-4 {
+  0%, 100% { 
+    transform: translate(0, 0);
+    opacity: 0.3;
+  }
+  30% { 
+    transform: translate(-22px, -18px);
+    opacity: 0.6;
+  }
+  70% { 
+    transform: translate(18px, -25px);
+    opacity: 0.5;
+  }
+}
+
+.animate-float-particle-4 {
+  animation: float-particle-4 16s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+@keyframes float-particle-5 {
+  0%, 100% { 
+    transform: translate(0, 0);
+    opacity: 0.35;
+  }
+  35% { 
+    transform: translate(25px, -15px);
+    opacity: 0.65;
+  }
+  75% { 
+    transform: translate(-12px, -28px);
+    opacity: 0.5;
+  }
+}
+
+.animate-float-particle-5 {
+  animation: float-particle-5 13s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+@keyframes float-particle-6 {
+  0%, 100% { 
+    transform: translate(0, 0);
+    opacity: 0.4;
+  }
+  45% { 
+    transform: translate(-16px, 22px);
+    opacity: 0.7;
+  }
+  85% { 
+    transform: translate(20px, 12px);
+    opacity: 0.55;
+  }
+}
+
+.animate-float-particle-6 {
+  animation: float-particle-6 17s ease-in-out infinite;
+  animation-delay: 2.5s;
+}
+
+/* Dashing lines animation */
+@keyframes dash {
+  0% {
+    stroke-dasharray: 0, 1000;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 200, 1000;
+    stroke-dashoffset: -100;
+  }
+  100% {
+    stroke-dasharray: 0, 1000;
+    stroke-dashoffset: -1000;
+  }
+}
+
+.animate-dash {
+  stroke-dasharray: 1000;
+  animation: dash 8s ease-in-out infinite;
+}
+
+.animate-dash-slow {
+  stroke-dasharray: 1000;
+  animation: dash 12s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* Card fade in and up on page load */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+/* Gradient radial utility */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}

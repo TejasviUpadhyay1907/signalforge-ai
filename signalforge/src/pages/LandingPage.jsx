@@ -303,34 +303,81 @@ export default function LandingPage() {
         </section>
 
         {/* CTA */}
-        <section className="py-24 relative">
-          <div className="max-w-3xl mx-auto px-6 relative z-10 text-center">
-            {/* Ambient glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[300px] bg-gold/[0.03] blur-[120px] rounded-full pointer-events-none" />
+        <section className="py-24 relative overflow-hidden">
+          {/* Subtle animated background layer */}
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold/[0.02] rounded-full blur-[140px] animate-float-slow" />
+            <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-blue-500/[0.015] rounded-full blur-[120px] animate-float-slower" />
+          </div>
 
-            <div className="relative rounded-[24px] border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm p-10 md:p-14">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">
+          <div className="max-w-3xl mx-auto px-6 relative z-10 text-center">
+            {/* Enhanced ambient glow behind card */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] bg-gradient-radial from-gold/[0.08] via-gold/[0.03] to-transparent blur-[100px] rounded-full pointer-events-none animate-pulse-slow" />
+            
+            {/* Secondary glow layer */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[280px] bg-gradient-radial from-purple-500/[0.04] via-blue-500/[0.02] to-transparent blur-[80px] rounded-full pointer-events-none animate-pulse-slower" />
+
+            {/* Floating AI particles around card */}
+            <div className="absolute inset-0 pointer-events-none">
+              {/* Top left particles */}
+              <div className="absolute top-[15%] left-[8%] w-1.5 h-1.5 rounded-full bg-gold/40 shadow-[0_0_8px_rgba(212,175,55,0.4)] animate-float-particle-1" />
+              <div className="absolute top-[25%] left-[12%] w-1 h-1 rounded-full bg-gold/30 shadow-[0_0_6px_rgba(212,175,55,0.3)] animate-float-particle-2" />
+              
+              {/* Top right particles */}
+              <div className="absolute top-[20%] right-[10%] w-1.5 h-1.5 rounded-full bg-blue-400/30 shadow-[0_0_8px_rgba(96,165,250,0.3)] animate-float-particle-3" />
+              <div className="absolute top-[12%] right-[15%] w-1 h-1 rounded-full bg-purple-400/25 shadow-[0_0_6px_rgba(192,132,252,0.25)] animate-float-particle-4" />
+              
+              {/* Bottom left particles */}
+              <div className="absolute bottom-[18%] left-[15%] w-1 h-1 rounded-full bg-gold/35 shadow-[0_0_6px_rgba(212,175,55,0.35)] animate-float-particle-5" />
+              <div className="absolute bottom-[28%] left-[8%] w-1.5 h-1.5 rounded-full bg-blue-400/25 shadow-[0_0_8px_rgba(96,165,250,0.25)] animate-float-particle-6" />
+              
+              {/* Bottom right particles */}
+              <div className="absolute bottom-[22%] right-[12%] w-1 h-1 rounded-full bg-purple-400/30 shadow-[0_0_6px_rgba(192,132,252,0.3)] animate-float-particle-1" />
+              <div className="absolute bottom-[15%] right-[18%] w-1.5 h-1.5 rounded-full bg-gold/30 shadow-[0_0_8px_rgba(212,175,55,0.3)] animate-float-particle-2" />
+
+              {/* Faint connecting lines (AI network feel) */}
+              <svg className="absolute inset-0 w-full h-full opacity-[0.08]" style={{ filter: 'blur(0.5px)' }}>
+                <line x1="15%" y1="20%" x2="85%" y2="25%" stroke="url(#line-gradient)" strokeWidth="0.5" className="animate-dash" />
+                <line x1="12%" y1="75%" x2="88%" y2="80%" stroke="url(#line-gradient)" strokeWidth="0.5" className="animate-dash-slow" />
+                <defs>
+                  <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="rgba(212,175,55,0)" />
+                    <stop offset="50%" stopColor="rgba(212,175,55,0.3)" />
+                    <stop offset="100%" stopColor="rgba(212,175,55,0)" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+
+            <div className="relative rounded-[24px] border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm p-10 md:p-14 transition-all duration-500 hover:border-white/[0.12] hover:-translate-y-1 hover:shadow-[0_20px_60px_-12px_rgba(0,0,0,0.5),0_0_40px_-8px_rgba(212,175,55,0.1)] group animate-fade-in-up">
+              {/* Gradient border glow on hover */}
+              <div className="absolute inset-0 rounded-[24px] bg-gradient-to-br from-gold/[0.08] via-transparent to-purple-500/[0.05] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ padding: '1px', WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)', WebkitMaskComposite: 'xor', maskComposite: 'exclude' }} />
+              
+              {/* Inner gradient for depth */}
+              <div className="absolute inset-0 rounded-[24px] bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight relative">
                 Your Next Market Insight <br /><span className="text-gradient">Starts Here</span>
               </h2>
-              <p className="text-base text-gray-400 mb-10 max-w-lg mx-auto leading-relaxed">
+              <p className="text-base text-gray-400 mb-10 max-w-lg mx-auto leading-relaxed relative">
                 Explore AI-ranked opportunities, portfolio intelligence, and real-time market analysis — all in one terminal.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-                <Link to="/dashboard" className="bg-gold hover:bg-gold-hover text-base font-semibold px-8 py-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10 relative">
+                <Link to="/dashboard" className="bg-gold hover:bg-gold-hover text-base font-semibold px-8 py-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_35px_rgba(212,175,55,0.4)] hover:scale-105 active:scale-100 flex items-center gap-2 group/btn">
                   Launch Dashboard
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-300 group-hover/btn:translate-x-1"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                 </Link>
-                <Link to="/assistant" className="text-gray-400 hover:text-white font-medium px-6 py-4 rounded-xl hover:bg-white/[0.04] transition-all duration-200 flex items-center gap-2">
+                <Link to="/assistant" className="text-gray-400 hover:text-white font-medium px-6 py-4 rounded-xl hover:bg-white/[0.06] transition-all duration-200 hover:scale-105 active:scale-100 flex items-center gap-2">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-50"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                   Try AI Assistant
                 </Link>
               </div>
 
               {/* Value chips */}
-              <div className="flex flex-wrap items-center justify-center gap-3">
+              <div className="flex flex-wrap items-center justify-center gap-3 relative">
                 {['AI-Ranked Signals', 'Portfolio Insights', 'Real-Time Analysis'].map(label => (
-                  <span key={label} className="text-[11px] font-medium text-gray-500 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06]">
+                  <span key={label} className="text-[11px] font-medium text-gray-500 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.05] transition-all duration-200">
                     {label}
                   </span>
                 ))}
