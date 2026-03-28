@@ -201,3 +201,154 @@ body {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.04); }
 }
+
+/* ── Clerk Auth Form Styling ── */
+.cl-rootBox {
+  width: 100%;
+}
+
+.cl-card {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.cl-headerTitle {
+  display: none !important;
+}
+
+.cl-headerSubtitle {
+  display: none !important;
+}
+
+.cl-socialButtonsBlockButton {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #F9FAFB !important;
+  transition: all 0.2s ease !important;
+}
+
+.cl-socialButtonsBlockButton:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(212, 175, 55, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+.cl-formFieldInput {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #F9FAFB !important;
+  transition: all 0.2s ease !important;
+}
+
+.cl-formFieldInput:focus {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(212, 175, 55, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1) !important;
+}
+
+.cl-formFieldInput::placeholder {
+  color: rgba(156, 163, 175, 0.5) !important;
+}
+
+.cl-formFieldLabel {
+  color: #9CA3AF !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+.cl-footerActionLink {
+  color: #D4AF37 !important;
+  transition: color 0.2s ease !important;
+}
+
+.cl-footerActionLink:hover {
+  color: #F4D03F !important;
+}
+
+.cl-formButtonPrimary {
+  background: linear-gradient(135deg, #D4AF37 0%, #F4D03F 100%) !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+  border: none !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 12px -2px rgba(212, 175, 55, 0.3) !important;
+}
+
+.cl-formButtonPrimary:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px -2px rgba(212, 175, 55, 0.4) !important;
+}
+
+.cl-formButtonPrimary:active {
+  transform: translateY(0) !important;
+}
+
+.cl-dividerRow {
+  margin: 24px 0 !important;
+}
+
+.cl-dividerLine {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.cl-dividerText {
+  color: #6B7280 !important;
+  font-size: 12px !important;
+}
+
+.cl-footerActionText {
+  color: #9CA3AF !important;
+  font-size: 13px !important;
+}
+
+.cl-internal-b3fm6y {
+  color: #9CA3AF !important;
+}
+
+.cl-formFieldInputShowPasswordButton {
+  color: #9CA3AF !important;
+}
+
+.cl-formFieldInputShowPasswordButton:hover {
+  color: #D4AF37 !important;
+}
+
+.cl-identityPreviewEditButton {
+  color: #D4AF37 !important;
+}
+
+.cl-identityPreviewEditButton:hover {
+  color: #F4D03F !important;
+}
+
+.cl-otpCodeFieldInput {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #F9FAFB !important;
+}
+
+.cl-otpCodeFieldInput:focus {
+  border-color: rgba(212, 175, 55, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1) !important;
+}
+
+.cl-formResendCodeLink {
+  color: #D4AF37 !important;
+}
+
+.cl-formResendCodeLink:hover {
+  color: #F4D03F !important;
+}
+
+.cl-alertText {
+  color: #F9FAFB !important;
+}
+
+.cl-backLink {
+  color: #9CA3AF !important;
+}
+
+.cl-backLink:hover {
+  color: #D4AF37 !important;
+}
