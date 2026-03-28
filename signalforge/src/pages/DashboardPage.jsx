@@ -290,8 +290,15 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Top AI Pick - Enhanced Hero Card */}
-              <div className="glass-card rounded-2xl p-7 border border-gold/20 shadow-[0_20px_60px_-15px_rgba(212,175,55,0.25),0_0_0_1px_rgba(212,175,55,0.05)] hover:shadow-[0_24px_70px_-15px_rgba(212,175,55,0.35),0_0_0_1px_rgba(212,175,55,0.1)] transition-all duration-500 relative overflow-hidden group">
+              {/* Top AI Pick - Enhanced Hero Card - Clickable */}
+              <Link 
+                to={`/stock/${topPick.symbol}`}
+                onMouseEnter={() => {
+                  // Prefetch stock data on hover for instant page load
+                  import('../services/api').then(({ prefetchStock }) => prefetchStock(topPick.symbol));
+                }}
+                className="glass-card rounded-2xl p-7 border border-gold/20 shadow-[0_20px_60px_-15px_rgba(212,175,55,0.25),0_0_0_1px_rgba(212,175,55,0.05)] hover:shadow-[0_24px_70px_-15px_rgba(212,175,55,0.35),0_0_0_1px_rgba(212,175,55,0.1)] transition-all duration-500 relative overflow-hidden group cursor-pointer block"
+              >
                 {/* Subtle gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.03] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 
@@ -344,7 +351,7 @@ export default function DashboardPage() {
                     {topPick.insight}
                   </p>
                 </div>
-              </div>
+              </Link>
 
               {/* Active Signals - Enhanced AI Trading Experience */}
               <div>
