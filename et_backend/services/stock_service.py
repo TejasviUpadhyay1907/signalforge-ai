@@ -46,12 +46,18 @@ class StockService:
             ValueError: If stock data not available
         """
         try:
-            # Normalize symbol (add .NS if not present for Indian stocks)
-            if not symbol.endswith('.NS'):
-                symbol = f"{symbol.upper()}.NS"
+            # Normalize symbol - try as-is first (for US stocks), then add .NS if needed
+            original_symbol = symbol.upper()
             
-            # Fetch OHLC data
-            ohlc_data = fetch_stock_ohlc_data(symbol, period_days)
+            # Try fetching without .NS first (US stocks)
+            ohlc_data = fetch_stock_ohlc_data(original_symbol, period_days)
+            
+            # If failed and doesn't have .NS, try adding .NS (Indian stocks)
+            if ohlc_data.get('error') and not original_symbol.endswith('.NS'):
+                symbol = f"{original_symbol}.NS"
+                ohlc_data = fetch_stock_ohlc_data(symbol, period_days)
+            else:
+                symbol = original_symbol
             
             if ohlc_data['error'] or not ohlc_data['historical_data']:
                 raise ValueError(f"No data available for {symbol}")
