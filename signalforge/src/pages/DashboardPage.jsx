@@ -15,6 +15,9 @@ export default function DashboardPage() {
   
   // Market sentiment timeframe filter state
   const [sentimentTimeframe, setSentimentTimeframe] = useState('1D');
+  
+  // View all signals state
+  const [showAllSignals, setShowAllSignals] = useState(false);
 
   // Load scan data (signals + analysis) — refreshes every 5 min
   const { data: scanData } = useApi(
@@ -239,20 +242,39 @@ export default function DashboardPage() {
       return 'hold';
     };
 
-    if (signalFilter === 'All') {
-      return stocks.slice(0, 5);
+    // First apply filter
+    let filtered = stocks;
+    if (signalFilter !== 'All') {
+      const filterLower = signalFilter.toLowerCase();
+      filtered = stocks.filter(stock => {
+        const normalized = normalizeSignal(stock.signal);
+        return normalized === filterLower;
+      });
     }
 
-    const filterLower = signalFilter.toLowerCase();
-    const filtered = stocks.filter(stock => {
-      const normalized = normalizeSignal(stock.signal);
-      return normalized === filterLower;
-    });
-
-    return filtered.slice(0, 5);
-  }, [stocks, signalFilter]);
+    // Then apply limit based on showAllSignals state
+    return showAllSignals ? filtered : filtered.slice(0, 5);
+  }, [stocks, signalFilter, showAllSignals]);
 
   const activeSignals = filteredSignals;
+  const totalFilteredCount = useMemo(() => {
+    if (!stocks || stocks.length === 0) return 0;
+    
+    const normalizeSignal = (signal) => {
+      const s = (signal || '').toLowerCase().trim();
+      if (s.includes('buy') || s === 'breakout' || s === 'momentum') return 'buy';
+      if (s.includes('sell') || s === 'risky') return 'sell';
+      return 'hold';
+    };
+
+    if (signalFilter === 'All') return stocks.length;
+    
+    const filterLower = signalFilter.toLowerCase();
+    return stocks.filter(stock => {
+      const normalized = normalizeSignal(stock.signal);
+      return normalized === filterLower;
+    }).length;
+  }, [stocks, signalFilter]);
   return (
     <DashboardLayout>
       <TopBar />
@@ -305,7 +327,31 @@ export default function DashboardPage() {
               {/* Active Signals */}
               <div>
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">Active Signals</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] uppercase tracking-wider text-gray-500 font-medium">Top AI Signals</span>
+                    {/* Info tooltip */}
+                    <div className="group/info relative">
+                      <svg 
+                        width="14" 
+                        height="14" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        className="text-gray-600 hover:text-gray-400 cursor-help transition-colors"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 16v-4" />
+                        <path d="M12 8h.01" />
+                      </svg>
+                      {/* Tooltip */}
+                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 opacity-0 pointer-events-none group-hover/info:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap">
+                        <div className="px-3 py-2 rounded-lg bg-[#0f0f13] border border-white/[0.15] shadow-[0_8px_24px_rgba(0,0,0,0.6)] text-[11px] text-gray-300">
+                          Highest-confidence signals selected by AI
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <div className="flex gap-1">
                     {['All', 'Buy', 'Sell'].map((filter) => (
                       <button
@@ -322,6 +368,39 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 </div>
+                
+                {/* Subtitle with count */}
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] text-gray-600">
+                    {showAllSignals 
+                      ? `Showing all ${totalFilteredCount} ${signalFilter.toLowerCase()} signal${totalFilteredCount !== 1 ? 's' : ''}`
+                      : `Showing top ${Math.min(5, totalFilteredCount)} of ${totalFilteredCount} ${signalFilter.toLowerCase()} signal${totalFilteredCount !== 1 ? 's' : ''}`
+                    }
+                  </span>
+                  {totalFilteredCount > 5 && (
+                    <button
+                      onClick={() => setShowAllSignals(!showAllSignals)}
+                      className="text-[10px] text-gold hover:text-gold/80 font-medium transition-colors flex items-center gap-1"
+                    >
+                      {showAllSignals ? (
+                        <>
+                          <span>Show Less</span>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="m18 15-6-6-6 6" />
+                          </svg>
+                        </>
+                      ) : (
+                        <>
+                          <span>View All</span>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="m6 9 6 6 6-6" />
+                          </svg>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+                
                 <div className="space-y-2">
                   {activeSignals.length > 0 ? (
                     activeSignals.map(s => (
