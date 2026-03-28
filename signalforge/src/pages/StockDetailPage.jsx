@@ -58,10 +58,11 @@ function InteractiveChart({ chartData, chartApiData, timeframe, isBullish, curre
     });
     
     if (closestPoint && minDist < 50) {
-      // Get price and timestamp from API data if available
-      const price = chartApiData?.prices?.[closestPoint.idx] || closestPoint.price || currentPrice;
+      // CRITICAL FIX: Use the price stored in the chart point itself, not from separate array
+      // Each chartData point already has the correct price from the API transformation
+      const price = closestPoint.price || currentPrice;
       const timestamp = chartApiData?.timestamps?.[closestPoint.idx];
-      const prevPrice = closestPoint.idx > 0 ? (chartApiData?.prices?.[closestPoint.idx - 1] || price) : price;
+      const prevPrice = closestPoint.idx > 0 ? (chartData[closestPoint.idx - 1]?.price || price) : price;
       const change = price - prevPrice;
       const changePct = prevPrice > 0 ? ((change / prevPrice) * 100) : 0;
       
@@ -380,10 +381,17 @@ export default function StockDetailPage() {
 
     const params = timeframeMap[tf] || timeframeMap['1M'];
     
+    console.log(`[Chart] Fetching ${tf} data for ${symbol}:`, params);
+    
     setLoadingChart(true);
     getUnifiedChart(symbol, params.period, params.interval)
       .then(data => {
         if (mountedRef.current && data) {
+          console.log(`[Chart] Received ${tf} data:`, {
+            dataPoints: data.prices?.length || 0,
+            priceRange: data.prices ? `${Math.min(...data.prices).toFixed(2)} - ${Math.max(...data.prices).toFixed(2)}` : 'N/A',
+            timestamps: data.timestamps?.length || 0
+          });
           setChartData(data);
         }
       })
@@ -463,6 +471,13 @@ export default function StockDetailPage() {
       const minPrice = Math.min(...prices);
       const maxPrice = Math.max(...prices);
       const priceRange = maxPrice - minPrice || 1;
+      
+      console.log(`[Chart Transform] ${symbol} ${tf}:`, {
+        points: prices.length,
+        priceRange: `${minPrice.toFixed(2)} - ${maxPrice.toFixed(2)}`,
+        firstPrice: prices[0]?.toFixed(2),
+        lastPrice: prices[prices.length - 1]?.toFixed(2)
+      });
       
       const chartPoints = prices.map((price, idx) => {
         const x = (idx / (prices.length - 1 || 1)) * 800;
