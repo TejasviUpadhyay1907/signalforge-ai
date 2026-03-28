@@ -640,30 +640,68 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Top Movers */}
-              <div className="glass-card rounded-2xl p-6 border border-white/[0.08] hover:border-white/[0.12] transition-all duration-300">
-                <div className="flex items-center gap-2.5 mb-4">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2.5" className="drop-shadow-[0_0_6px_rgba(212,175,55,0.3)]">
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                  <span className="text-[11px] uppercase tracking-[0.1em] text-gray-400 font-bold">Top Movers</span>
-                </div>
-                <div className="space-y-1">
-                  {topMovers.map((m, idx) => (
-                    <Link 
-                      key={m.symbol} 
-                      to={`/stock/${m.symbol}`}
-                      className="flex justify-between items-center py-2.5 px-2 rounded-lg hover:bg-white/[0.04] transition-all duration-200 group"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-[9px] text-gray-600 font-bold w-4">{idx + 1}</span>
-                        <span className="text-xs font-bold text-white group-hover:text-gold transition-colors">{m.symbol}</span>
-                      </div>
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${m.up ? 'text-signal-green bg-signal-greenLight' : 'text-signal-red bg-signal-redLight'}`}>
-                        {m.change}
-                      </span>
-                    </Link>
-                  ))}
+              {/* Top Movers - Enhanced Premium Card */}
+              <div className="glass-card rounded-2xl p-6 border border-white/[0.08] hover:border-white/[0.12] transition-all duration-300 relative overflow-hidden">
+                {/* Subtle gradient accent */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-full blur-3xl pointer-events-none" />
+                
+                <div className="relative z-10">
+                  {/* Enhanced Header */}
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center border border-gold/20">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2.5" className="drop-shadow-[0_0_6px_rgba(212,175,55,0.3)]">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white tracking-tight">Top Movers</h3>
+                      <p className="text-[10px] text-gray-500 mt-0.5">Highest volatility today</p>
+                    </div>
+                  </div>
+                  
+                  {/* Enhanced Mover List */}
+                  <div className="space-y-2">
+                    {topMovers.map((m, idx) => (
+                      <Link 
+                        key={m.symbol} 
+                        to={`/stock/${m.symbol}`}
+                        className="flex items-center justify-between py-3 px-3 rounded-xl hover:bg-white/[0.06] transition-all duration-200 group border border-transparent hover:border-white/[0.08] relative"
+                      >
+                        {/* Rank indicator with gradient for top 3 */}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                            idx === 0 ? 'bg-gradient-to-br from-gold/20 to-gold/10 text-gold border border-gold/30' :
+                            idx === 1 ? 'bg-gradient-to-br from-gray-400/20 to-gray-400/10 text-gray-400 border border-gray-400/30' :
+                            idx === 2 ? 'bg-gradient-to-br from-amber-600/20 to-amber-600/10 text-amber-600 border border-amber-600/30' :
+                            'bg-white/[0.04] text-gray-500 border border-white/[0.08]'
+                          }`}>
+                            {idx + 1}
+                          </div>
+                          
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-sm font-bold text-white group-hover:text-gold transition-colors truncate">
+                              {m.symbol}
+                            </span>
+                            <span className="text-[10px] text-gray-500 font-medium">
+                              {m.up ? 'Gaining' : 'Declining'}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Enhanced movement badge */}
+                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-sm shrink-0 border ${
+                          m.up 
+                            ? 'bg-signal-green/10 text-signal-green border-signal-green/30 shadow-[0_0_8px_rgba(16,185,129,0.1)]' 
+                            : 'bg-signal-red/10 text-signal-red border-signal-red/30 shadow-[0_0_8px_rgba(239,68,68,0.1)]'
+                        }`}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <path d={m.up ? "M12 19V5M5 12l7-7 7 7" : "M12 5v14M5 12l7 7 7-7"} />
+                          </svg>
+                          <span>{m.change}</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
