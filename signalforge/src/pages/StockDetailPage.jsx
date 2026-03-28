@@ -328,7 +328,7 @@ export default function StockDetailPage() {
     return () => { mountedRef.current = false; };
   }, []);
 
-  // ── CRITICAL OPTIMIZATION: Parallel data fetching ────────────────────────────
+  // ── CRITICAL OPTIMIZATION: Parallel data fetching with progressive updates ──
   useEffect(() => {
     if (!symbol) return;
 
@@ -341,31 +341,39 @@ export default function StockDetailPage() {
       setLoadingDetail(true);
     }
 
-    // OPTIMIZATION: Fetch all data in parallel instead of sequential
-    // This reduces total load time from ~5s to ~1s
-    const quotePromise = getFinnhubQuote(symbol).catch(() => null);
-    const detailPromise = fetchStockDetail(symbol).catch(() => null);
-    const chartPromise = getUnifiedChart(symbol, '1mo', '1d').catch(() => null);
+    // CRITICAL FIX: Update state as EACH request completes (not waiting for all)
+    // This makes the page feel much faster - quote appears in ~300ms, not ~800ms
+    
+    // Fetch quote (fastest ~300ms) - update immediately when ready
+    getFinnhubQuote(symbol)
+      .then(quote => {
+        if (mountedRef.current && quote?.price > 0) {
+          setFinnhubQuote(quote);
+        }
+      })
+      .catch(() => {});
 
-    // Process results as they arrive (fastest first)
-    Promise.all([quotePromise, detailPromise, chartPromise]).then(([quote, detail, chart]) => {
-      if (!mountedRef.current) return;
-      
-      // Update quote immediately (usually fastest ~300ms)
-      if (quote?.price > 0) setFinnhubQuote(quote);
-      
-      // Update detail (usually ~800ms)
-      if (detail) {
-        setLiveData(detail);
-        setLoadingDetail(false);
-      }
-      
-      // Update chart (usually ~600ms)
-      if (chart) {
-        setChartData(chart);
-        chartCacheRef.current.set('1M', chart); // Cache default timeframe
-      }
-    });
+    // Fetch detail (slower ~800ms) - update when ready
+    fetchStockDetail(symbol)
+      .then(detail => {
+        if (mountedRef.current && detail) {
+          setLiveData(detail);
+          setLoadingDetail(false);
+        }
+      })
+      .catch(() => {
+        if (mountedRef.current) setLoadingDetail(false);
+      });
+
+    // Fetch default chart (medium ~600ms) - update when ready
+    getUnifiedChart(symbol, '1mo', '1d')
+      .then(chart => {
+        if (mountedRef.current && chart) {
+          setChartData(chart);
+          chartCacheRef.current.set('1M', chart); // Cache default timeframe
+        }
+      })
+      .catch(() => {});
 
     // Poll quote every 15s for live updates
     const pollId = setInterval(() => {
@@ -377,14 +385,15 @@ export default function StockDetailPage() {
     return () => clearInterval(pollId);
   }, [symbol]);
 
-  // ── OPTIMIZATION: Smart chart caching by timeframe ───────────────────────────
+  // ── OPTIMIZATION: Smart chart caching by timeframe with instant display ─────
   useEffect(() => {
     if (!symbol || !tf) return;
 
-    // Check cache first
+    // Check cache first - show immediately if available
     const cachedChart = chartCacheRef.current.get(tf);
     if (cachedChart) {
       setChartData(cachedChart);
+      setLoadingChart(false);
       return;
     }
 
@@ -405,12 +414,11 @@ export default function StockDetailPage() {
         if (mountedRef.current && data) {
           setChartData(data);
           chartCacheRef.current.set(tf, data); // Cache for instant switching
+          setLoadingChart(false);
         }
       })
       .catch(err => {
         console.error('Chart fetch error:', err);
-      })
-      .finally(() => {
         if (mountedRef.current) setLoadingChart(false);
       });
   }, [symbol, tf]);
