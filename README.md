@@ -180,7 +180,7 @@ SignalForge transforms raw market data into actionable intelligence through:
 ## 🌐 Live Demo
 
 **Frontend:** [https://signalforge-theta.vercel.app](https://signalforge-theta.vercel.app)  
-**Backend API:** [https://signalforge-vgb7.onrender.com](https://signalforge-vgb7.onrender.com)  
+**Backend :** [https://signalforge-vgb7.onrender.com](https://signalforge-vgb7.onrender.com)  
 **GitHub:** [https://github.com/TejasviUpadhyay1907/signalforge-ai](https://github.com/TejasviUpadhyay1907/signalforge-ai)
 
 ---
