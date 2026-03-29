@@ -2,10 +2,11 @@
 
 > **AI-Powered Stock Intelligence Platform Delivering Real-Time Market Insights & Actionable Signals**
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://signalforge.vercel.app)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://signalforge-theta.vercel.app/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?logo=react)](https://reactjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![GitHub](https://img.shields.io/badge/GitHub-signalforge--ai-181717?logo=github)](https://github.com/TejasviUpadhyay1907/signalforge-ai)
 
 ---
 
@@ -177,9 +178,9 @@ SignalForge transforms raw market data into actionable intelligence through:
 ---
 
 ## 🌐 Live Demo
-
 **Frontend:** [https://signalforge.vercel.app](https://signalforge.vercel.app)  
 **Backend API:** [https://signalforge-api.onrender.com](https://signalforge-api.onrender.com)  
+**GitHub:** [https://github.com/TejasviUpadhyay1907/signalforge-ai](https://github.com/TejasviUpadhyay1907/signalforge-ai)
 **GitHub:** [https://github.com/Swayam2706/signalforge](https://github.com/Swayam2706/signalforge)
 
 ---
@@ -193,10 +194,10 @@ SignalForge transforms raw market data into actionable intelligence through:
 - API Keys: Finnhub, OpenAI
 
 ### Frontend Setup
-
 ```bash
 # Clone the repository
-git clone https://github.com/Swayam2706/signalforge.git
+git clone https://github.com/TejasviUpadhyay1907/signalforge-ai.git
+cd signalforge-ai/et_frontendom/Swayam2706/signalforge.git
 cd signalforge/et_frontend
 
 # Install dependencies
@@ -334,21 +335,12 @@ LOG_LEVEL=INFO
 
 ## 👥 Team
 
-**Swayam Patel**  
-*Full-Stack Developer & AI Engineer*  
-[GitHub](https://github.com/Swayam2706) | [LinkedIn](#)
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+**Swayam Pawar**  
+*Full-Stack Developer*  
+[GitHub](https://github.com/Swayam2706) 
+**Tejasvi Upadhyay**  
+*AI Engineer*  
+[GitHub](https://github.com/TejasviUpadhyay1907) 
 
 ---
 
@@ -362,20 +354,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Finnhub** — Real-time market data API
 - **Yahoo Finance** — Historical stock data
-- **OpenAI** — AI-powered analysis
+- **OpenRouter** — AI-powered analysis
 - **Clerk** — Authentication infrastructure
 - **Vercel** — Frontend hosting
 - **Render** — Backend hosting
-
----
-
-## 📞 Contact
-
-For questions, feedback, or collaboration opportunities:
-
-- **Email:** swayampatel2706@gmail.com
-- **GitHub Issues:** [Create an issue](https://github.com/Swayam2706/signalforge/issues)
-- **Live Demo:** [signalforge.vercel.app](https://signalforge.vercel.app)
 
 ---
 
@@ -384,5 +366,3 @@ For questions, feedback, or collaboration opportunities:
 **Built with ❤️ for traders and investors worldwide**
 
 ⭐ Star this repo if you find it useful!
-
-</div>
