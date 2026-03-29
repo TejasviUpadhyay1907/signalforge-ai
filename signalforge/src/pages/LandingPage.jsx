@@ -5,6 +5,7 @@ import SignalBadge from '../components/SignalBadge';
 import CandlestickChart from '../components/CandlestickChart';
 import DemoModal from '../components/DemoModal';
 import { FullLogo } from '../components/Logo';
+import { scanMarket } from '../services/api';
 
 const features = [
   { title: 'Multi-Signal Detection', desc: 'Confluence modeling across technical patterns, options flow, and dark pool activity to confirm trend direction.', icon: <path d="M2 12h4l3-9 5 18 3-9h5" /> },
@@ -20,7 +21,8 @@ const steps = [
   { num: '04', title: 'Dashboard Delivery', desc: 'Instantaneous push to your terminal with clear parameters and risk logic.' },
 ];
 
-const opportunities = [
+// Fallback static data if API fails
+const fallbackOpportunities = [
   { symbol: 'AMD', name: 'Advanced Micro Devices', price: '₹13,793', change: '+3.12%', signal: 'Buy', confidence: 88, rationale: 'Volume divergence on the 4H chart aligning with heavy call buying. Supply zone broken.', tags: ['Vol Breakout', 'Options Flow'], color: 'green' },
   { symbol: 'CRWD', name: 'CrowdStrike Holdings', price: '₹23,982', change: '-1.45%', signal: 'Short', confidence: 76, rationale: 'Double top formation validated by MACD sell crossover. Insider selling cluster detected over last 7 days.', tags: ['Tech Weakness', 'Sell Pattern'], color: 'red' },
   { symbol: 'NVDA', name: 'NVIDIA Corporation', price: '₹74,962', change: '+4.28%', signal: 'Strong Buy', confidence: 95, rationale: 'Institutional accumulation detected across 3 consecutive sessions. RSI breakout above 70 with sustained volume confirming momentum.', tags: ['Breakout', 'Institutional Activity', 'Volume Spike'], color: 'green' },
@@ -31,11 +33,49 @@ export default function LandingPage() {
   const [activeStep, setActiveStep] = useState(0);
   const [activeFeature, setActiveFeature] = useState(0);
   const [demoOpen, setDemoOpen] = useState(false);
+  const [opportunities, setOpportunities] = useState(fallbackOpportunities);
+  const [isLiveData, setIsLiveData] = useState(false);
 
   useEffect(() => {
     const stepId = setInterval(() => setActiveStep(prev => (prev + 1) % 4), 2000);
     const featId = setInterval(() => setActiveFeature(prev => (prev + 1) % 4), 2500);
     return () => { clearInterval(stepId); clearInterval(featId); };
+  }, []);
+
+  // Fetch live opportunities data
+  useEffect(() => {
+    const fetchLiveOpportunities = async () => {
+      try {
+        const data = await scanMarket({ maxResults: 3, useAi: true });
+        if (data && data.stocks && data.stocks.length > 0) {
+          // Transform API data to match component format
+          const liveOpps = data.stocks.slice(0, 3).map(stock => ({
+            symbol: stock.symbol,
+            name: stock.companyName || stock.symbol,
+            price: `₹${stock.currentPrice?.toLocaleString('en-IN') || 'N/A'}`,
+            change: stock.changePercent 
+              ? `${stock.changePercent >= 0 ? '+' : ''}${stock.changePercent.toFixed(2)}%`
+              : '0.00%',
+            signal: stock.signal || 'Hold',
+            confidence: stock.signalConfidence || 50,
+            rationale: stock.aiExplanation || stock.insight || 'AI analysis in progress...',
+            tags: stock.tags || [],
+            color: (stock.signal === 'Buy' || stock.signal === 'Strong Buy') ? 'green' : 
+                   (stock.signal === 'Sell' || stock.signal === 'Short') ? 'red' : 'gray'
+          }));
+          setOpportunities(liveOpps);
+          setIsLiveData(true);
+        }
+      } catch (error) {
+        console.log('Using fallback data for opportunities:', error.message);
+        // Keep fallback data if API fails
+      }
+    };
+
+    fetchLiveOpportunities();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchLiveOpportunities, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -252,8 +292,20 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
               <div>
-                <h2 className="text-3xl font-bold text-white mb-2">Active Opportunities</h2>
-                <p className="text-gray-400">Real examples of setups currently tracked by our systems.</p>
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-3xl font-bold text-white">Active Opportunities</h2>
+                  {isLiveData && (
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-signal-green/10 border border-signal-green/20">
+                      <span className="live-dot" />
+                      <span className="text-xs font-medium text-signal-green uppercase tracking-wider">LIVE</span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-gray-400">
+                  {isLiveData 
+                    ? 'Real-time setups currently tracked by our AI systems.' 
+                    : 'Real examples of setups currently tracked by our systems.'}
+                </p>
               </div>
               <Link to="/dashboard" className="text-sm text-gold hover:text-white transition-colors flex items-center gap-2">
                 View All Active Scans
