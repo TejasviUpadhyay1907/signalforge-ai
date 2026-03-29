@@ -547,7 +547,7 @@ async def get_stock_detail(symbol: str, period: int = Query(default=60, ge=7, le
             "volume": ohlc_data.get("current_volume", 0),
             "ohlc": ohlc_data.get("historical_data", []),
             "signal": sig.get("signal_type", "Hold"),
-            "confidence": int(sig.get("total_score", 50)) if "total_score" in sig else 50,
+            "confidence": int(sig.get("confidence", 50)),
             "trend": sig.get("trend", "Neutral"),
             "change": change_pct,
             "changeAmt": change_amt,
