@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import DashboardLayout from '../components/DashboardLayout';
 import { suggestedPrompts } from '../data/mockData';
-import { chatWithAssistant, getDashboardOverview } from '../services/api';
-import { transformAssistantResponse } from '../services/transforms';
+import { getDashboardOverview } from '../services/api';
 import { useApi } from '../hooks/useApi';
+import { processAssistantQuery } from '../services/assistantEngine';
 
 // These are UI navigation labels — not business data
 const quickCommands = ['Find Opportunities', 'Show Risky Stocks', 'Analyze Portfolio', 'Market Overview'];
@@ -204,19 +204,37 @@ export default function AssistantPage() {
     setRecentQueries(prev => [{ text: q, time: 'Just now' }, ...prev.filter(r => r.text !== q)].slice(0, 5));
 
     try {
-      // Try real backend first
-      const userId = user?.id || 'anonymous';
-      const backendResponse = await chatWithAssistant({ userId, message: q });
+      // Process query using enhanced assistant engine
+      const result = await processAssistantQuery(q);
       setTyping(false);
-      const responseData = transformAssistantResponse(backendResponse);
-      const type = responseData.signalStatus?.includes('Buy') ? 'bullish' : 'risky';
-      setMessages(prev => [...prev, { role: 'ai', data: responseData, type }]);
-    } catch {
+      
+      // Determine response type
+      const type = result.type === 'bullish' ? 'bullish' : 
+                   result.type === 'risky' ? 'risky' : 
+                   result.type === 'clarification' ? 'risky' :
+                   result.type === 'error' ? 'risky' : 'risky';
+      
+      setMessages(prev => [...prev, { 
+        role: 'ai', 
+        data: result.data, 
+        type,
+        stockData: result.stockData,
+        parsed: result.parsed
+      }]);
+    } catch (error) {
       // Fallback to generic response
       setTyping(false);
+      console.error('Assistant error:', error);
       setMessages(prev => [...prev, { role: 'ai', data: {
-        summary: `I've analyzed "${q}" across our signal database. Based on current market conditions, I'm seeing mixed signals. Try asking about a specific ticker like RELIANCE, TCS, or INFY for detailed insights.`,
-        signalStatus: 'Hold', confidence: 72, action: 'Monitor', actionTerm: 'Pending',
+        summary: `I encountered an issue processing your query. Please try asking about a specific stock ticker like RELIANCE, TCS, or INFY for detailed analysis.`,
+        signalStatus: 'Error', 
+        confidence: 0, 
+        action: 'Retry', 
+        actionTerm: 'Immediate',
+        riskFactors: ['Query processing failed', 'Please try again with a specific ticker'],
+        catalysts: [],
+        sentimentChange: 'N/A',
+        signalStrength: 0
       }, type: 'risky' }]);
     }
   };
