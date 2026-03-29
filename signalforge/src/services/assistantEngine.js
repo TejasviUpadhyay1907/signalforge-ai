@@ -5,7 +5,57 @@
 
 import { getStockDetail, getLiveQuotes, scanMarket } from './api';
 
-// Intent types
+// ============================================================================
+// SAFE HELPER UTILITIES
+// ============================================================================
+
+/**
+ * Safely convert value to string
+ */
+function safeString(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (typeof value === 'object') return JSON.stringify(value);
+  return '';
+}
+
+/**
+ * Safely convert value to array
+ */
+function safeArray(value) {
+  if (Array.isArray(value)) return value;
+  if (value === null || value === undefined) return [];
+  return [value];
+}
+
+/**
+ * Safely check if string includes substring
+ */
+function safeIncludesString(value, search) {
+  const str = safeString(value).toLowerCase();
+  const searchStr = safeString(search).toLowerCase();
+  return str.includes(searchStr);
+}
+
+/**
+ * Check if value is non-empty string
+ */
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+/**
+ * Normalize message input to safe string
+ */
+function normalizeInput(message) {
+  if (!message) return '';
+  return safeString(message).trim();
+}
+
+// ============================================================================
+// INTENT TYPES AND RESPONSE MODES
+// ============================================================================
 export const INTENTS = {
   STOCK_ANALYSIS: 'stock_analysis',
   RISKY_STOCKS: 'risky_stocks',
@@ -116,15 +166,18 @@ const TICKER_MAP = {
  * Classify user intent BEFORE ticker resolution
  */
 export function classifyIntent(message) {
-  const lowerMessage = message.toLowerCase();
+  const normalizedMessage = normalizeInput(message);
+  if (!normalizedMessage) return INTENTS.GENERAL_CLARIFICATION;
+  
+  const lowerMessage = normalizedMessage.toLowerCase();
   
   // RISKY_STOCKS intent
   if (
-    lowerMessage.includes('risky stocks') ||
-    lowerMessage.includes('show risky') ||
-    lowerMessage.includes('weak stocks') ||
-    lowerMessage.includes('stocks to avoid') ||
-    lowerMessage.includes('bearish stocks') ||
+    safeIncludesString(lowerMessage, 'risky stocks') ||
+    safeIncludesString(lowerMessage, 'show risky') ||
+    safeIncludesString(lowerMessage, 'weak stocks') ||
+    safeIncludesString(lowerMessage, 'stocks to avoid') ||
+    safeIncludesString(lowerMessage, 'bearish stocks') ||
     lowerMessage === 'show risky stocks'
   ) {
     return INTENTS.RISKY_STOCKS;
@@ -132,12 +185,12 @@ export function classifyIntent(message) {
   
   // FIND_OPPORTUNITIES intent
   if (
-    lowerMessage.includes('find opportunities') ||
-    lowerMessage.includes('best stocks') ||
-    lowerMessage.includes('top stocks') ||
-    lowerMessage.includes('opportunities') ||
-    lowerMessage.includes('good stocks') ||
-    lowerMessage.includes('stocks to buy') ||
+    safeIncludesString(lowerMessage, 'find opportunities') ||
+    safeIncludesString(lowerMessage, 'best stocks') ||
+    safeIncludesString(lowerMessage, 'top stocks') ||
+    safeIncludesString(lowerMessage, 'opportunities') ||
+    safeIncludesString(lowerMessage, 'good stocks') ||
+    safeIncludesString(lowerMessage, 'stocks to buy') ||
     lowerMessage === 'find opportunities'
   ) {
     return INTENTS.FIND_OPPORTUNITIES;
@@ -145,11 +198,11 @@ export function classifyIntent(message) {
   
   // MARKET_OVERVIEW intent
   if (
-    lowerMessage.includes('market overview') ||
-    lowerMessage.includes('how is the market') ||
-    lowerMessage.includes('market summary') ||
-    lowerMessage.includes('market status') ||
-    lowerMessage.includes('market today') ||
+    safeIncludesString(lowerMessage, 'market overview') ||
+    safeIncludesString(lowerMessage, 'how is the market') ||
+    safeIncludesString(lowerMessage, 'market summary') ||
+    safeIncludesString(lowerMessage, 'market status') ||
+    safeIncludesString(lowerMessage, 'market today') ||
     lowerMessage === 'market overview'
   ) {
     return INTENTS.MARKET_OVERVIEW;
@@ -157,10 +210,10 @@ export function classifyIntent(message) {
   
   // PORTFOLIO_ANALYSIS intent
   if (
-    lowerMessage.includes('analyze portfolio') ||
-    lowerMessage.includes('my portfolio') ||
-    lowerMessage.includes('portfolio analysis') ||
-    lowerMessage.includes('portfolio review') ||
+    safeIncludesString(lowerMessage, 'analyze portfolio') ||
+    safeIncludesString(lowerMessage, 'my portfolio') ||
+    safeIncludesString(lowerMessage, 'portfolio analysis') ||
+    safeIncludesString(lowerMessage, 'portfolio review') ||
     lowerMessage === 'analyze portfolio'
   ) {
     return INTENTS.PORTFOLIO_ANALYSIS;
@@ -168,27 +221,27 @@ export function classifyIntent(message) {
   
   // SECTOR_ANALYSIS intent
   if (
-    lowerMessage.includes('sector') ||
-    lowerMessage.includes('it stocks') ||
-    lowerMessage.includes('banking stocks') ||
-    lowerMessage.includes('pharma stocks') ||
-    lowerMessage.includes('auto stocks')
+    safeIncludesString(lowerMessage, 'sector') ||
+    safeIncludesString(lowerMessage, 'it stocks') ||
+    safeIncludesString(lowerMessage, 'banking stocks') ||
+    safeIncludesString(lowerMessage, 'pharma stocks') ||
+    safeIncludesString(lowerMessage, 'auto stocks')
   ) {
     return INTENTS.SECTOR_ANALYSIS;
   }
   
   // STOCK_ANALYSIS intent - check if ticker/company mentioned
-  const hasTicker = Object.keys(TICKER_MAP).some(key => lowerMessage.includes(key)) ||
-                    /\b([A-Z]{2,10})\b/.test(message);
+  const hasTicker = Object.keys(TICKER_MAP).some(key => safeIncludesString(lowerMessage, key)) ||
+                    /\b([A-Z]{2,10})\b/.test(normalizedMessage);
   
   if (
     hasTicker ||
-    lowerMessage.includes('analyze') ||
-    lowerMessage.includes('outlook') ||
-    lowerMessage.includes('should i buy') ||
-    lowerMessage.includes('should i sell') ||
-    lowerMessage.includes('what about') ||
-    lowerMessage.includes('tell me about')
+    safeIncludesString(lowerMessage, 'analyze') ||
+    safeIncludesString(lowerMessage, 'outlook') ||
+    safeIncludesString(lowerMessage, 'should i buy') ||
+    safeIncludesString(lowerMessage, 'should i sell') ||
+    safeIncludesString(lowerMessage, 'what about') ||
+    safeIncludesString(lowerMessage, 'tell me about')
   ) {
     return INTENTS.STOCK_ANALYSIS;
   }
@@ -201,7 +254,12 @@ export function classifyIntent(message) {
  * Parse user query to extract ticker and timeframe (only for stock analysis)
  */
 export function parseStockQuery(message) {
-  const lowerMessage = message.toLowerCase();
+  const normalizedMessage = normalizeInput(message);
+  if (!normalizedMessage) {
+    return { ticker: null, matchedPhrase: null, timeframe: 'short-term' };
+  }
+  
+  const lowerMessage = normalizedMessage.toLowerCase();
   
   // Extract ticker/company name
   let ticker = null;
@@ -210,7 +268,7 @@ export function parseStockQuery(message) {
   // Try to match company names (longest match first)
   const sortedKeys = Object.keys(TICKER_MAP).sort((a, b) => b.length - a.length);
   for (const key of sortedKeys) {
-    if (lowerMessage.includes(key)) {
+    if (safeIncludesString(lowerMessage, key)) {
       ticker = TICKER_MAP[key];
       matchedPhrase = key;
       break;
@@ -219,7 +277,7 @@ export function parseStockQuery(message) {
   
   // Try to match ticker symbols directly (2-10 uppercase letters)
   if (!ticker) {
-    const tickerMatch = message.match(/\b([A-Z]{2,10})\b/);
+    const tickerMatch = normalizedMessage.match(/\b([A-Z]{2,10})\b/);
     if (tickerMatch) {
       ticker = tickerMatch[1];
       matchedPhrase = ticker;
@@ -228,11 +286,11 @@ export function parseStockQuery(message) {
   
   // Extract timeframe
   let timeframe = 'short-term';
-  if (lowerMessage.includes('long term') || lowerMessage.includes('long-term')) {
+  if (safeIncludesString(lowerMessage, 'long term') || safeIncludesString(lowerMessage, 'long-term')) {
     timeframe = 'long-term';
-  } else if (lowerMessage.includes('medium term') || lowerMessage.includes('medium-term')) {
+  } else if (safeIncludesString(lowerMessage, 'medium term') || safeIncludesString(lowerMessage, 'medium-term')) {
     timeframe = 'medium-term';
-  } else if (lowerMessage.includes('intraday') || lowerMessage.includes('today')) {
+  } else if (safeIncludesString(lowerMessage, 'intraday') || safeIncludesString(lowerMessage, 'today')) {
     timeframe = 'intraday';
   }
   
@@ -284,8 +342,8 @@ export async function fetchRiskyStocks() {
     // Filter for risky/bearish stocks
     const riskyStocks = scanData.stocks
       .filter(stock => {
-        const signal = (stock.signal || '').toLowerCase();
-        return signal.includes('sell') || signal.includes('short') || 
+        const signalStr = safeString(stock.signal);
+        return safeIncludesString(signalStr, 'sell') || safeIncludesString(signalStr, 'short') || 
                stock.signalConfidence < 40 || stock.changePercent < -2;
       })
       .slice(0, 10)
@@ -294,7 +352,7 @@ export async function fetchRiskyStocks() {
         name: stock.companyName || stock.symbol,
         price: stock.currentPrice,
         change: stock.changePercent,
-        signal: stock.signal || 'Sell',
+        signal: safeString(stock.signal) || 'Sell',
         confidence: stock.signalConfidence || 50,
         reason: stock.aiExplanation || stock.insight || 'Showing weakness in recent sessions'
       }));
@@ -319,8 +377,8 @@ export async function fetchOpportunities() {
     // Filter for bullish/opportunity stocks
     const opportunities = scanData.stocks
       .filter(stock => {
-        const signal = (stock.signal || '').toLowerCase();
-        return signal.includes('buy') || signal.includes('breakout') || 
+        const signalStr = safeString(stock.signal);
+        return safeIncludesString(signalStr, 'buy') || safeIncludesString(signalStr, 'breakout') || 
                stock.signalConfidence > 70;
       })
       .slice(0, 10)
@@ -329,7 +387,7 @@ export async function fetchOpportunities() {
         name: stock.companyName || stock.symbol,
         price: stock.currentPrice,
         change: stock.changePercent,
-        signal: stock.signal || 'Buy',
+        signal: safeString(stock.signal) || 'Buy',
         confidence: stock.signalConfidence || 70,
         reason: stock.aiExplanation || stock.insight || 'Showing positive momentum'
       }));
@@ -352,8 +410,8 @@ export async function generateMarketOverview() {
     }
     
     const stocks = scanData.stocks;
-    const bullishCount = stocks.filter(s => (s.signal || '').toLowerCase().includes('buy')).length;
-    const bearishCount = stocks.filter(s => (s.signal || '').toLowerCase().includes('sell')).length;
+    const bullishCount = stocks.filter(s => safeIncludesString(s.signal, 'buy')).length;
+    const bearishCount = stocks.filter(s => safeIncludesString(s.signal, 'sell')).length;
     const avgChange = stocks.reduce((sum, s) => sum + (s.changePercent || 0), 0) / stocks.length;
     
     const topGainers = stocks
@@ -405,25 +463,28 @@ export function generateStockAnalysis(stockData, timeframe) {
     tags = []
   } = stockData;
   
+  // Safely normalize signal to string
+  const signalStr = safeString(signal) || 'Hold';
+  
   // Determine signal status
-  const isBullish = signal.includes('Buy');
-  const isBearish = signal.includes('Sell');
-  const signalStatus = signal || 'Hold';
+  const isBullish = safeIncludesString(signalStr, 'Buy');
+  const isBearish = safeIncludesString(signalStr, 'Sell');
+  const signalStatus = signalStr || 'Hold';
   
   // Calculate dynamic confidence
-  const dynamicConfidence = confidence || 50;
+  const dynamicConfidence = typeof confidence === 'number' ? confidence : 50;
   
   // Generate summary based on real data
   let summary = `${symbol} is currently trading at ₹${currentPrice.toLocaleString('en-IN')} with a ${changePercent >= 0 ? 'gain' : 'loss'} of ${Math.abs(changePercent).toFixed(2)}% today. `;
   
   if (isBullish) {
-    summary += `The stock shows ${signal.toLowerCase()} signal with ${dynamicConfidence}% confidence. `;
+    summary += `The stock shows ${signalStr.toLowerCase()} signal with ${dynamicConfidence}% confidence. `;
     summary += aiSummary || aiExplanation || `Technical indicators suggest positive momentum with ${trend || 'upward'} trend.`;
   } else if (isBearish) {
-    summary += `The stock shows ${signal.toLowerCase()} signal with ${dynamicConfidence}% confidence. `;
+    summary += `The stock shows ${signalStr.toLowerCase()} signal with ${dynamicConfidence}% confidence. `;
     summary += aiSummary || aiExplanation || `Technical indicators suggest caution with ${trend || 'downward'} pressure.`;
   } else {
-    summary += `The stock shows a ${signal.toLowerCase()} signal. `;
+    summary += `The stock shows a ${signalStr.toLowerCase()} signal. `;
     summary += aiSummary || aiExplanation || `Current market conditions suggest a wait-and-watch approach.`;
   }
   
@@ -438,7 +499,7 @@ export function generateStockAnalysis(stockData, timeframe) {
   if (isBearish) {
     riskFactors.push('Technical indicators showing bearish divergence');
   }
-  if (volume && volume.includes('M')) {
+  if (volume && safeIncludesString(volume, 'M')) {
     const volNum = parseFloat(volume);
     if (volNum < 1) {
       riskFactors.push('Below-average trading volume may indicate low liquidity');
@@ -450,8 +511,8 @@ export function generateStockAnalysis(stockData, timeframe) {
   }
   
   // Generate catalysts
-  const catalysts = tags.length > 0 
-    ? tags.map(tag => `${tag} pattern detected in recent price action`)
+  const catalysts = Array.isArray(tags) && tags.length > 0 
+    ? tags.map(tag => `${safeString(tag)} pattern detected in recent price action`)
     : [
         `${momentum || 'Current'} momentum in ${symbol}`,
         `${trend || 'Market'} trend alignment`,
@@ -460,7 +521,7 @@ export function generateStockAnalysis(stockData, timeframe) {
   
   // Determine action plan
   let action = 'Monitor';
-  let actionTerm = timeframe;
+  let actionTerm = timeframe || 'short-term';
   let actionTarget = null;
   
   if (isBullish && dynamicConfidence > 70) {
@@ -474,7 +535,7 @@ export function generateStockAnalysis(stockData, timeframe) {
   }
   
   // Calculate signal strength (1-5)
-  const signalStrength = Math.ceil(dynamicConfidence / 20);
+  const signalStrength = Math.max(1, Math.min(5, Math.ceil(dynamicConfidence / 20)));
   
   return {
     summary,
@@ -763,9 +824,10 @@ export async function processAssistantQuery(message) {
       // Generate analysis
       const analysis = generateStockAnalysis(stockData, parsed.timeframe);
       
-      // Determine response type
-      const type = analysis.signalStatus.includes('Buy') ? 'bullish' : 
-                   analysis.signalStatus.includes('Sell') ? 'risky' : 'neutral';
+      // Safely determine response type
+      const signalStatusStr = safeString(analysis.signalStatus);
+      const type = safeIncludesString(signalStatusStr, 'Buy') ? 'bullish' : 
+                   safeIncludesString(signalStatusStr, 'Sell') ? 'risky' : 'neutral';
       
       return {
         mode: RESPONSE_MODES.STOCK_RESULT,
