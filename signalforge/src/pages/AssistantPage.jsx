@@ -226,25 +226,25 @@ export default function AssistantPage() {
             </div>
           </header>
 
-          <div ref={chatRef} className="flex-1 overflow-y-auto px-8 pt-8 pb-48">
-            <div className="max-w-4xl mx-auto space-y-8">
+          <div ref={chatRef} className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-48">
+            <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
               {/* Welcome */}
               {messages.length === 0 && (
-                <div className="text-center py-20 animate-fade-in">
-                  <div className="relative inline-flex mb-8">
+                <div className="text-center py-12 sm:py-16 lg:py-20 animate-fade-in px-4">
+                  <div className="relative inline-flex mb-6 sm:mb-8">
                     <div className="absolute inset-0 bg-gold/20 blur-3xl rounded-full" />
-                    <div className="relative w-20 h-20 rounded-3xl bg-gradient-to-br from-gold/20 via-gold/10 to-transparent border border-gold/30 flex items-center justify-center shadow-[0_0_40px_rgba(212,175,55,0.2)]">
-                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-br from-gold/20 via-gold/10 to-transparent border border-gold/30 flex items-center justify-center shadow-[0_0_40px_rgba(212,175,55,0.2)]">
+                      <svg width="28" height="28" className="sm:w-9 sm:h-9" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2">
                         <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
                       </svg>
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">SignalForge AI Assistant</h3>
-                  <p className="text-sm text-white/60 mb-10 max-w-lg mx-auto leading-relaxed">Ask about any ticker, sector, or market trend. I'll analyze signals and provide actionable insights powered by real-time data.</p>
-                  <div className="flex flex-wrap justify-center gap-3 max-w-2xl mx-auto">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3 tracking-tight">SignalForge AI Assistant</h3>
+                  <p className="text-sm text-white/60 mb-8 sm:mb-10 max-w-lg mx-auto leading-relaxed px-4">Ask about any ticker, sector, or market trend. I'll analyze signals and provide actionable insights powered by real-time data.</p>
+                  <div className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-2xl mx-auto">
                     {suggestedPrompts.slice(0, 4).map(p => (
                       <button key={p} onClick={() => sendMessage(p)}
-                        className="px-5 py-3 rounded-xl bg-white/[0.06] border border-white/[0.12] hover:border-gold/40 hover:bg-gold/10 hover:shadow-[0_0_25px_rgba(212,175,55,0.15)] transition-all duration-300 text-xs font-medium text-white/80 hover:text-white">
+                        className="px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-white/[0.06] border border-white/[0.12] hover:border-gold/40 hover:bg-gold/10 hover:shadow-[0_0_25px_rgba(212,175,55,0.15)] transition-all duration-300 text-xs font-medium text-white/80 hover:text-white">
                         {p}
                       </button>
                     ))}
@@ -304,22 +304,22 @@ export default function AssistantPage() {
             </div>
           </div>
           {/* Input */}
-          <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-base via-base/98 to-transparent pt-20 pb-8 px-8 z-30 pointer-events-none">
+          <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-base via-base/98 to-transparent pt-16 sm:pt-20 pb-6 sm:pb-8 px-4 sm:px-6 lg:px-8 z-30 pointer-events-none">
             <div className="max-w-4xl mx-auto relative pointer-events-auto">
-              <div className="relative flex items-end gap-3 bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-white/[0.02] border border-white/[0.15] rounded-2xl p-3 pl-5 shadow-[0_8px_40px_rgba(0,0,0,0.4)] backdrop-blur-xl">
+              <div className="relative flex items-end gap-2 sm:gap-3 bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-white/[0.02] border border-white/[0.15] rounded-2xl p-2 sm:p-3 pl-3 sm:pl-5 shadow-[0_8px_40px_rgba(0,0,0,0.4)] backdrop-blur-xl">
                 <textarea rows="1" value={input} onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-                  className="w-full bg-transparent text-sm text-white placeholder-white/50 resize-none outline-none py-3.5 max-h-32 leading-relaxed"
+                  className="w-full bg-transparent text-sm text-white placeholder-white/50 resize-none outline-none py-2.5 sm:py-3.5 max-h-32 leading-relaxed"
                   placeholder="Ask about a ticker, sector, or macroeconomic trend..." />
-                <div className="flex items-center gap-3 mb-1 shrink-0 pr-1">
+                <div className="flex items-center gap-2 sm:gap-3 mb-1 shrink-0 pr-1">
                   <span className="text-[10px] text-white/40 hidden sm:inline-block uppercase tracking-wider font-medium">Enter ↵</span>
                   <button onClick={() => sendMessage()}
-                    className="p-3 rounded-xl bg-gradient-to-br from-gold via-gold to-yellow-600 text-black hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.3)]">
+                    className="p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-gold via-gold to-yellow-600 text-black hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.3)]">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                   </button>
                 </div>
               </div>
-              <p className="text-center mt-3 text-[10px] text-white/40 font-medium">AI generated insights are for informational purposes only.</p>
+              <p className="text-center mt-2.5 sm:mt-3 text-[10px] text-white/40 font-medium">AI generated insights are for informational purposes only.</p>
             </div>
           </div>
         </main>

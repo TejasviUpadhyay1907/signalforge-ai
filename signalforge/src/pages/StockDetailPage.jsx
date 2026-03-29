@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState, useMemo, useEffect, useRef, useCallback, React } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
 import TopBar from '../components/TopBar';
 import ConfidenceMeter from '../components/ConfidenceMeter';
@@ -847,56 +847,58 @@ export default function StockDetailPage() {
           </div>
 
           {/* Header */}
-          <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-4xl font-bold text-white tracking-tight">{d.name}</h1>
-                <span className="px-2.5 py-1 rounded bg-surface border border-surfaceBorder text-gray-400 font-mono text-lg">{d.symbol}</span>
-              </div>
-              <div className="flex items-baseline gap-3 mt-1">
-                <span className="text-3xl font-semibold text-white">{fmtPrice(d.price)}</span>
-                <div className={`flex items-center gap-1 font-medium px-2 py-0.5 rounded text-sm ${isBullish ? 'text-signal-green bg-signal-green/10' : 'text-signal-red bg-signal-red/10'}`}>
-                  {isBullish ? '↑' : '↓'} {fmtChange(d.changeAmt)} ({fmtPct(d.change)})
+          <header className="flex flex-col gap-4 sm:gap-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 sm:gap-6">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight truncate">{d.name}</h1>
+                  <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded bg-surface border border-surfaceBorder text-gray-400 font-mono text-sm sm:text-base lg:text-lg shrink-0">{d.symbol}</span>
                 </div>
-                <span className="text-gray-500 text-xs ml-2">Market Open</span>
-                {loadingDetail && (
-                  <span className="flex items-center gap-1 text-[10px] text-gray-600">
-                    <svg className="animate-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
-                    Loading analysis...
-                  </span>
-                )}
+                <div className="flex items-baseline gap-2 sm:gap-3 mt-1 flex-wrap">
+                  <span className="text-xl sm:text-2xl lg:text-3xl font-semibold text-white">{fmtPrice(d.price)}</span>
+                  <div className={`flex items-center gap-1 font-medium px-1.5 sm:px-2 py-0.5 rounded text-xs sm:text-sm ${isBullish ? 'text-signal-green bg-signal-green/10' : 'text-signal-red bg-signal-red/10'}`}>
+                    {isBullish ? '↑' : '↓'} {fmtChange(d.changeAmt)} ({fmtPct(d.change)})
+                  </div>
+                  <span className="text-gray-500 text-xs ml-1 sm:ml-2">Market Open</span>
+                  {loadingDetail && (
+                    <span className="flex items-center gap-1 text-[10px] text-gray-600">
+                      <svg className="animate-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+                      Loading analysis...
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex flex-col items-end gap-1">
-                <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Primary Signal</span>
-                <div className={`flex items-center gap-2 bg-gradient-to-r ${isBullish ? 'from-signal-green/20 border-signal-green/30' : 'from-signal-red/20 border-signal-red/30'} to-transparent border pl-3 pr-4 py-2 rounded-lg backdrop-blur-sm`}>
-                  <div className={`w-2.5 h-2.5 rounded-full ${isBullish ? 'bg-signal-green' : 'bg-signal-red'} animate-pulse`} />
-                  <span className={`${isBullish ? 'text-signal-green' : 'text-signal-red'} font-bold text-lg tracking-wide uppercase`}>{d.signal}</span>
+              <div className="flex items-center gap-4 shrink-0">
+                <div className="flex flex-col items-end gap-1">
+                  <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Primary Signal</span>
+                  <div className={`flex items-center gap-2 bg-gradient-to-r ${isBullish ? 'from-signal-green/20 border-signal-green/30' : 'from-signal-red/20 border-signal-red/30'} to-transparent border pl-3 pr-4 py-2 rounded-lg backdrop-blur-sm`}>
+                    <div className={`w-2.5 h-2.5 rounded-full ${isBullish ? 'bg-signal-green' : 'bg-signal-red'} animate-pulse`} />
+                    <span className={`${isBullish ? 'text-signal-green' : 'text-signal-red'} font-bold text-base sm:text-lg tracking-wide uppercase`}>{d.signal}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left - Main Analysis Column (2/3 width) */}
-            <div className="lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
+            {/* Left - Main Analysis Column (2/3 width on xl screens) */}
+            <div className="xl:col-span-2 space-y-4 sm:space-y-6">
               {/* Metrics Bar */}
               <div className="glass-card rounded-2xl overflow-hidden">
-                <div className="flex flex-wrap items-center justify-between px-5 py-4 bg-white/[0.02] border-b border-surfaceBorder gap-4">
+                <div className="flex flex-wrap items-center justify-between px-4 sm:px-5 py-3 sm:py-4 bg-white/[0.02] border-b border-surfaceBorder gap-3 sm:gap-4">
                   {[
                     { label: 'Volume', value: d.volume, sub: d.volumeChange || 'Today', color: 'emerald' },
                     { label: 'Day High', value: d.dayHigh ? fmtPrice(d.dayHigh) : '—', sub: 'Today', color: 'emerald' },
                     { label: 'Day Low', value: d.dayLow ? fmtPrice(d.dayLow) : '—', sub: 'Today', color: isBullish ? 'emerald' : 'red' },
                     { label: 'Prev Close', value: d.prevClose ? fmtPrice(d.prevClose) : '—', sub: 'Yesterday', color: 'blue' },
                   ].map(m => (
-                    <div key={m.label} className="min-w-[90px]">
+                    <div key={m.label} className="min-w-[80px] sm:min-w-[90px]">
                       <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">{m.label}</span>
-                      <div className={`text-lg font-bold text-${m.color}-400 mt-0.5`}>{m.value}</div>
+                      <div className={`text-base sm:text-lg font-bold text-${m.color}-400 mt-0.5`}>{m.value}</div>
                       <span className="text-[9px] text-gray-500">{m.sub}</span>
                     </div>
                   ))}
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+                  <div className="flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg bg-emerald-500/5 border border-emerald-500/20 w-full sm:w-auto">
                     <span className="relative flex h-2 w-2">
                       <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${wsConnected ? 'bg-emerald-400' : 'bg-amber-400'} opacity-75`} />
                       <span className={`relative inline-flex rounded-full h-2 w-2 ${wsConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
@@ -913,19 +915,20 @@ export default function StockDetailPage() {
                 </div>
 
                 {/* Chart */}
-                <div className="p-5 border-b border-surfaceBorder flex justify-between items-center bg-white/[0.01]">
-                  <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <div className="p-4 sm:p-5 border-b border-surfaceBorder flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 bg-white/[0.01]">
+                  <h2 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" /></svg>
-                    Price Action & Key Levels
+                    <span className="hidden sm:inline">Price Action & Key Levels</span>
+                    <span className="sm:hidden">Price Chart</span>
                   </h2>
-                  <div className="flex bg-base rounded-md p-1 border border-surfaceBorder">
+                  <div className="flex bg-base rounded-md p-1 border border-surfaceBorder w-full sm:w-auto overflow-x-auto">
                     {timeframes.map(t => (
                       <button key={t} onClick={() => setTf(t)}
-                        className={`px-3 py-1 text-xs font-medium rounded transition-all ${t === tf ? 'bg-surface text-white border border-white/10' : 'text-gray-400 hover:text-white'}`}>{t}</button>
+                        className={`px-2 sm:px-3 py-1 text-xs font-medium rounded transition-all whitespace-nowrap ${t === tf ? 'bg-surface text-white border border-white/10' : 'text-gray-400 hover:text-white'}`}>{t}</button>
                     ))}
                   </div>
                 </div>
-                <div className="relative w-full h-[300px] p-6" id="chart-container">
+                <div className="relative w-full h-[250px] sm:h-[300px] p-4 sm:p-6" id="chart-container">
                   {(loadingDetail || loadingChart) ? (
                     // Loading state - show clean loading UI
                     <div className="absolute inset-0 flex flex-col gap-3 p-6 z-10">

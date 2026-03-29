@@ -277,11 +277,11 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <TopBar />
-      <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-base via-base to-[#0d0d0f]">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gradient-to-br from-base via-base to-[#0d0d0f]">
         <div className="max-w-[1400px] mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Left Column */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               {/* Top AI Pick - Enhanced Hero Card - Clickable */}
               <Link 
                 to={`/stock/${topPick.symbol}`}
