@@ -356,6 +356,29 @@ export default function LandingPage() {
 
         {/* CTA */}
         <section className="py-24 relative overflow-hidden">
+          {/* Animated grid background */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute inset-0 opacity-[0.12] animate-grid-drift-landing">
+              <div className="absolute inset-0" style={{
+                backgroundImage: `
+                  linear-gradient(to right, rgba(212,175,55,0.15) 1px, transparent 1px),
+                  linear-gradient(to bottom, rgba(212,175,55,0.15) 1px, transparent 1px)
+                `,
+                backgroundSize: '60px 60px',
+              }} />
+            </div>
+            {/* Secondary grid layer for depth */}
+            <div className="absolute inset-0 opacity-[0.06] animate-grid-drift-landing-slow">
+              <div className="absolute inset-0" style={{
+                backgroundImage: `
+                  linear-gradient(to right, rgba(96,165,250,0.1) 1px, transparent 1px),
+                  linear-gradient(to bottom, rgba(96,165,250,0.1) 1px, transparent 1px)
+                `,
+                backgroundSize: '120px 120px',
+              }} />
+            </div>
+          </div>
+
           {/* Subtle animated background layer */}
           <div className="absolute inset-0 opacity-30">
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold/[0.02] rounded-full blur-[140px] animate-float-slow" />

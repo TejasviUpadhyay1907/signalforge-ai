@@ -790,3 +790,41 @@ body {
     animation: none;
   }
 }
+
+/* ── Landing Page CTA Grid Animation ── */
+
+/* Animated grid drift for landing page */
+@keyframes grid-drift-landing {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(30px, 30px);
+  }
+}
+
+.animate-grid-drift-landing {
+  animation: grid-drift-landing 25s linear infinite;
+}
+
+/* Slower secondary grid for depth */
+@keyframes grid-drift-landing-slow {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-40px, -40px);
+  }
+}
+
+.animate-grid-drift-landing-slow {
+  animation: grid-drift-landing-slow 35s linear infinite;
+}
+
+/* Respect prefers-reduced-motion for landing page grids */
+@media (prefers-reduced-motion: reduce) {
+  .animate-grid-drift-landing,
+  .animate-grid-drift-landing-slow {
+    animation: none;
+  }
+}
