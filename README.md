@@ -2,7 +2,7 @@
 
 > **AI-Powered Stock Intelligence Platform Delivering Real-Time Market Insights & Actionable Signals**
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://signalforge-theta.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://signalforge-theta.vercel.app)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?logo=react)](https://reactjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
@@ -99,7 +99,7 @@ SignalForge transforms raw market data into actionable intelligence through:
 - **FastAPI** — High-performance Python API framework
 - **SQLAlchemy 2.0** — Database ORM
 - **PostgreSQL** — Production database
-- **OpenAI API** — AI-powered analysis
+- **OpenRouter** — AI-powered analysis
 - **yfinance** — Market data provider
 - **Finnhub API** — Real-time WebSocket data
 
@@ -141,7 +141,7 @@ SignalForge transforms raw market data into actionable intelligence through:
 │  External Services                   │
 │  • Finnhub (Real-time data)          │
 │  • Yahoo Finance (Historical data)   │
-│  • OpenAI (AI Analysis)              │
+│  • OpenRouter (AI Analysis)          │
 │  • PostgreSQL (User data)            │
 └─────────────────────────────────────┘
 ```
@@ -178,10 +178,10 @@ SignalForge transforms raw market data into actionable intelligence through:
 ---
 
 ## 🌐 Live Demo
-**Frontend:** [https://signalforge.vercel.app](https://signalforge.vercel.app)  
-**Backend API:** [https://signalforge-api.onrender.com](https://signalforge-api.onrender.com)  
+
+**Frontend:** [https://signalforge-theta.vercel.app](https://signalforge-theta.vercel.app)  
+**Backend API:** [https://signalforge-vgb7.onrender.com](https://signalforge-vgb7.onrender.com)  
 **GitHub:** [https://github.com/TejasviUpadhyay1907/signalforge-ai](https://github.com/TejasviUpadhyay1907/signalforge-ai)
-**GitHub:** [https://github.com/Swayam2706/signalforge](https://github.com/Swayam2706/signalforge)
 
 ---
 
@@ -191,14 +191,14 @@ SignalForge transforms raw market data into actionable intelligence through:
 - Node.js 18+ and npm
 - Python 3.10+
 - PostgreSQL (optional, SQLite works for development)
-- API Keys: Finnhub, OpenAI
+- API Keys: Finnhub, OpenRouter
 
 ### Frontend Setup
+
 ```bash
 # Clone the repository
 git clone https://github.com/TejasviUpadhyay1907/signalforge-ai.git
-cd signalforge-ai/et_frontendom/Swayam2706/signalforge.git
-cd signalforge/et_frontend
+cd signalforge-ai/et_frontend
 
 # Install dependencies
 npm install
@@ -207,7 +207,7 @@ npm install
 cp .env.example .env
 
 # Add your environment variables
-# VITE_API_BASE_URL=http://localhost:8000
+# VITE_API_BASE_URL=https://signalforge-vgb7.onrender.com
 # VITE_CLERK_PUBLISHABLE_KEY=your_clerk_key
 
 # Start development server
@@ -242,7 +242,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 ### Frontend (.env)
 ```env
-VITE_API_BASE_URL=http://localhost:8000
+VITE_API_BASE_URL=https://signalforge-vgb7.onrender.com
 VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 ```
 
@@ -250,7 +250,7 @@ VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 ```env
 # API Keys
 FINNHUB_API_KEY=your_finnhub_api_key
-OPENAI_API_KEY=your_openai_api_key
+OPENROUTER_API_KEY=your_openrouter_api_key
 
 # Database
 DATABASE_URL=postgresql://user:password@localhost:5432/signalforge
@@ -337,10 +337,23 @@ LOG_LEVEL=INFO
 
 **Swayam Pawar**  
 *Full-Stack Developer*  
-[GitHub](https://github.com/Swayam2706) 
+[GitHub](https://github.com/Swayam2706)
+
 **Tejasvi Upadhyay**  
 *AI Engineer*  
-[GitHub](https://github.com/TejasviUpadhyay1907) 
+[GitHub](https://github.com/TejasviUpadhyay1907)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
@@ -361,8 +374,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+## 📞 Contact
+
+For questions, feedback, or collaboration opportunities:
+
+- **Email:** swayampatel2706@gmail.com
+- **GitHub Issues:** [Create an issue](https://github.com/TejasviUpadhyay1907/signalforge-ai/issues)
+- **Live Demo:** [signalforge-theta.vercel.app](https://signalforge-theta.vercel.app)
+
+---
+
 <div align="center">
 
 **Built with ❤️ for traders and investors worldwide**
 
 ⭐ Star this repo if you find it useful!
+
+</div>
